@@ -208,7 +208,7 @@ export function ChatPanel({ variant = "page", onClose }: { variant?: "sheet" | "
           <button type="button" onClick={() => fileRef.current?.click()} aria-label="Anexar exame (PDF ou imagem)" className="flex h-12 w-11 shrink-0 items-center justify-center rounded-full text-ink hover:bg-surface">
             <PaperclipIcon width={22} />
           </button>
-          <div className="flex min-h-12 flex-1 items-center rounded-2xl bg-surface pl-4 pr-1 ring-ink/40 focus-within:ring-2">
+          <div className="flex min-h-12 min-w-0 flex-1 items-center rounded-2xl bg-surface pl-4 pr-1 ring-ink/40 focus-within:ring-2">
             <label htmlFor="mensagem" className="sr-only">Mensagem</label>
             <input
               id="mensagem"

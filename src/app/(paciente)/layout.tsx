@@ -9,6 +9,9 @@ import { OnboardingGate } from "@/components/OnboardingGate";
 export default function PacienteLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-bg">
+      <a href="#conteudo" className="sr-only z-50 rounded-xl bg-ink px-4 py-3 text-[15px] font-medium text-white focus:not-sr-only focus:fixed focus:left-3 focus:top-3">
+        Pular para o conteúdo
+      </a>
       <header className="sticky top-0 z-20 flex items-center justify-between bg-white/95 px-5 pb-2 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur">
         <Link href="/" aria-label="Elo Saúde, início" className="-ml-1 flex min-h-11 items-center px-1">
           <Logo />
@@ -27,7 +30,7 @@ export default function PacienteLayout({ children }: { children: React.ReactNode
       </header>
       <ChatNotifier />
       <ChatLauncher />
-      <main className="flex-1 px-5 pb-32 pt-4">{children}</main>
+      <main id="conteudo" tabIndex={-1} className="flex-1 px-5 pb-32 pt-4 outline-none">{children}</main>
       <BottomNav />
       <OnboardingGate />
     </div>

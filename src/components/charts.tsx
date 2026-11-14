@@ -78,9 +78,15 @@ export function LabTrendChart({
   const tMax = Math.max(...data.map((d) => d.t));
   const span = Math.max(tMax - tMin, 86_400_000 * 60);
   const out = (v: number) => (refLow != null && v < refLow) || (refHigh != null && v > refHigh);
+  // Texto do gráfico para o leitor de tela (WCAG 1.1.1)
+  const first = data[0];
+  const last = data.at(-1);
+  const summary = first && last
+    ? `Gráfico de ${data.length} resultados, de ${fullFmt(first.t)} a ${fullFmt(last.t)}: de ${nf(first.value)} para ${nf(last.value)} ${unit}, menor ${nf(Math.min(...values))}, maior ${nf(Math.max(...values))}.${refLow != null || refHigh != null ? ` Faixa de referência ${refLow != null ? nf(refLow) : ""}${refLow != null && refHigh != null ? " a " : ""}${refHigh != null ? nf(refHigh) : ""} ${unit}.` : ""}`
+    : "Gráfico sem resultados.";
 
   return (
-    <div style={{ height }}>
+    <div style={{ height }} role="img" aria-label={summary}>
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ top: 16, right: 12, bottom: 0, left: -12 }}>
           <CartesianGrid stroke={CHART.grid} strokeDasharray="3 3" vertical={false} />
@@ -218,7 +224,7 @@ export function WearableChart({
         </div>
       </div>
       {!data.length && <p className="py-8 text-center text-[15px] text-muted">Sem medições neste período.</p>}
-      <div style={{ height }}>
+      <div style={{ height }} role="img" aria-label={wearableSummary(data, series, unit)}>
         <ResponsiveContainer width="100%" height="100%">
           <Chart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -18 }}>
             <CartesianGrid stroke={CHART.grid} strokeDasharray="3 3" vertical={false} />
@@ -250,4 +256,16 @@ export function WearableChart({
       </div>
     </div>
   );
+}
+
+/** Resumo em texto de um gráfico de sinais, para o leitor de tela (WCAG 1.1.1). */
+function wearableSummary(data: (WearableDay & { t: number })[], series: WearableSeries[], unit: string): string {
+  if (!data.length) return "Gráfico sem medições neste período.";
+  const parts = series.map((s) => {
+    const vals = data.map((d) => d[s.key]).filter((v): v is number => typeof v === "number");
+    if (!vals.length) return `${s.name}: sem medições`;
+    const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+    return `${s.name}: média ${nf(avg)}, menor ${nf(Math.min(...vals))}, maior ${nf(Math.max(...vals))}, último ${nf(vals.at(-1)!)} ${unit}`;
+  });
+  return `Gráfico de ${fullFmt(data[0].t)} a ${fullFmt(data.at(-1)!.t)}. ${parts.join(". ")}.`;
 }

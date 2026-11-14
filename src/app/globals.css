@@ -17,6 +17,8 @@
   --color-surface-2: #ebebe7;
   --color-line: #e4e4df;
   --color-line-strong: #cfcfc8;
+  /* Borda de campos, caixas de seleção e interruptor desligado: 3:1 sobre branco e cartões (WCAG 1.4.11) */
+  --color-control: #80869a;
 
   /* Tinta (azul-marinho) */
   --color-ink: #1f2b4d;
@@ -172,7 +174,7 @@ summary::-webkit-details-marker {
 }
 
 @utility input {
-  @apply min-h-12 w-full rounded-xl border border-line-strong bg-white px-3.5 py-2 text-base text-ink outline-none placeholder:text-muted focus:border-ink;
+  @apply min-h-12 w-full rounded-xl border border-control bg-white px-3.5 py-2 text-base text-ink outline-none placeholder:text-muted focus:border-ink;
   transition: border-color var(--duration-quick) var(--ease-smooth-out);
 }
 @utility label {
@@ -203,6 +205,9 @@ summary::-webkit-details-marker {
 .t-tabs {
   position: relative;
   display: flex;
+  /* Em tela estreita ou com texto ampliado, a barra rola em vez de vazar da página (WCAG 1.4.10) */
+  overflow-x: auto;
+  scrollbar-width: none;
   gap: 3px;
   padding: 3px;
   border-radius: 14px;
@@ -221,7 +226,8 @@ summary::-webkit-details-marker {
   white-space: nowrap;
   font-size: 15px;
   font-weight: 500;
-  color: var(--color-muted);
+  /* Um tom acima do muted: 4,8:1 sobre o fundo da barra (WCAG 1.4.3) */
+  color: #5f6679;
   cursor: pointer;
   transition:
     color var(--duration-fast) var(--ease-smooth-out),
@@ -239,6 +245,15 @@ summary::-webkit-details-marker {
 }
 .t-tab:active {
   transform: scale(0.97);
+}
+@media (max-width: 359px) {
+  .t-tab {
+    white-space: normal;
+    padding: 4px 6px;
+  }
+}
+.t-tabs::-webkit-scrollbar {
+  display: none;
 }
 .t-tab:focus-visible {
   outline: 2px solid var(--color-ink);

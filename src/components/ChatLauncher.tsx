@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, useRef } from "react";
 import { Drawer } from "vaul";
 import { useUnreadCount } from "@/lib/chat";
 import { closeChat, openChat, setChatOpen, useChatOpen } from "@/lib/chatOpen";
@@ -28,19 +28,23 @@ function Launcher() {
   const unread = useUnreadCount();
   const path = usePathname();
   const hidden = HIDE_ON.some((p) => path.startsWith(p));
+  const launcher = useRef<HTMLButtonElement>(null);
 
+  // autoFocus: ao abrir, o foco do teclado entra na conversa e fica preso nela até fechar (WCAG 2.4.3)
   return (
-    <Drawer.Root open={open} onOpenChange={setChatOpen} handleOnly>
+    <Drawer.Root open={open} onOpenChange={setChatOpen} handleOnly autoFocus>
       {!hidden && (
         <div className="pointer-events-none fixed inset-x-0 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-30 mx-auto flex max-w-md justify-end px-4">
           <button
+            ref={launcher}
             type="button"
             onClick={openChat}
-            aria-label={unread ? `Conversar com o Elo, ${unread} ${unread === 1 ? "mensagem nova" : "mensagens novas"}` : "Conversar com o Elo"}
             className={`lift pointer-events-auto relative flex h-14 items-center gap-2 rounded-full bg-ink pl-4 pr-5 text-white shadow-[0_10px_28px_-8px_rgb(20_28_51/0.55)] transition-opacity duration-200 ${open ? "opacity-0" : "opacity-100"}`}
           >
             <ChatIcon width={24} weight="fill" />
+            <span className="sr-only">Conversar com o </span>
             <span className="text-[15px] font-medium">Elo</span>
+            {unread > 0 && <span className="sr-only">, {unread} {unread === 1 ? "mensagem nova" : "mensagens novas"}</span>}
             {unread > 0 && (
               <span key={unread} className="t-badge num absolute -right-1 -top-1 flex h-6 min-w-6 items-center justify-center rounded-full bg-accent px-1.5 text-xs font-bold text-ink ring-2 ring-white" aria-hidden>
                 {unread > 9 ? "9+" : unread}
@@ -53,6 +57,13 @@ function Launcher() {
         <Drawer.Overlay className="fixed inset-0 z-50 bg-navy-900/40" />
         <Drawer.Content
           aria-describedby={undefined}
+          onCloseAutoFocus={(e) => {
+            // Ao fechar, o foco volta para o botão do Elo, de onde a pessoa saiu
+            if (launcher.current) {
+              e.preventDefault();
+              launcher.current.focus();
+            }
+          }}
           className="fixed inset-x-0 bottom-0 z-50 mx-auto flex h-[92dvh] max-w-md flex-col overflow-hidden rounded-t-[28px] bg-white outline-none"
         >
           <Drawer.Title className="sr-only">Conversa com o Elo</Drawer.Title>
