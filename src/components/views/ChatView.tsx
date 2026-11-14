@@ -188,15 +188,23 @@ export function ChatPanel({ variant = "page", onClose }: { variant?: "sheet" | "
       </div>
 
       <div className={`border-t border-line bg-white ${sheet ? "pb-[max(0.75rem,env(safe-area-inset-bottom))]" : "pb-[max(0.75rem,env(safe-area-inset-bottom))]"}`}>
-        <div className="flex gap-2 overflow-x-auto px-4 pt-3" data-vaul-no-drag aria-label="Sugestões">
-          {menuActions().map((a) => (
-            <button key={a.label} type="button" onClick={() => onAction(a)} className="shrink-0 rounded-full bg-surface px-3.5 py-2 text-sm font-medium text-ink transition-colors hover:bg-surface-2">
-              {a.label}
-            </button>
-          ))}
-        </div>
+        {/* Atalhos empilhados em grade (2 colunas), alvos de 44px e afastados do campo de escrever; somem enquanto a pessoa digita */}
+        {!draft.trim() && (
+          <div className="grid grid-cols-2 gap-2 px-4 pt-3" data-vaul-no-drag role="group" aria-label="Atalhos">
+            {menuActions().map((a) => (
+              <button
+                key={a.label}
+                type="button"
+                onClick={() => onAction(a)}
+                className="flex min-h-11 items-center justify-center rounded-xl bg-surface px-3 py-2 text-center text-sm font-medium leading-tight text-ink transition-colors hover:bg-surface-2"
+              >
+                {a.label}
+              </button>
+            ))}
+          </div>
+        )}
         <form
-          className="flex items-end gap-2 px-3 pt-2"
+          className="flex items-end gap-2 px-3 pt-4"
           onSubmit={(e) => {
             e.preventDefault();
             sendText(draft);
@@ -295,7 +303,7 @@ function Bubble({ m, grouped, copied, onAction, onNavigate }: { m: ChatMessage; 
           )}
         </div>
         {m.actions && m.actions.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-2">
+          <div className="mt-2.5 flex flex-wrap gap-2.5">
             {m.actions.map((a, i) => (
               <ActionChip key={i} a={a} primary={i === 0 && ["save-exam", "copy", "tel"].includes(a.kind)} done={done && ["save-exam", "discard-exam", "revoke"].includes(a.kind)} copied={copied} onAction={onAction} onNavigate={onNavigate} />
             ))}
@@ -308,7 +316,7 @@ function Bubble({ m, grouped, copied, onAction, onNavigate }: { m: ChatMessage; 
 }
 
 function ActionChip({ a, primary, done, copied, onAction, onNavigate }: { a: ChatAction; primary: boolean; done: boolean; copied: boolean; onAction: (a: ChatAction) => void; onNavigate?: () => void }) {
-  const base = "inline-flex min-h-10 items-center gap-1.5 rounded-full px-4 text-sm font-medium transition-colors disabled:cursor-default disabled:opacity-50";
+  const base = "inline-flex min-h-11 items-center gap-1.5 rounded-full px-4 text-sm font-medium transition-colors disabled:cursor-default disabled:opacity-50";
   const tone = primary ? "bg-accent text-ink hover:bg-accent-hover" : "border border-line-strong bg-white text-ink hover:border-ink";
   if (a.kind === "link") {
     return (
