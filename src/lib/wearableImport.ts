@@ -467,8 +467,7 @@ type AiDay = { data: string; fc_repouso?: number | null; vfc_ms?: number | null;
 async function fromAi(file: File, text?: string): Promise<ImportResult> {
   if (!geminiConfigured()) {
     throw new ImportError(
-      "Não reconheci o formato deste arquivo. Com uma chave da Gemini em Configurações, a IA organiza os dados; ou envie a exportação do Apple Saúde (.zip) ou uma planilha com uma linha por dia.",
-      true,
+      "Não reconheci o formato deste arquivo. Envie a exportação do Apple Saúde (.zip) ou uma planilha com uma linha por dia.",
     );
   }
   const isText = text != null || /\.(json|csv|tsv|txt|xml)$/i.test(file.name);

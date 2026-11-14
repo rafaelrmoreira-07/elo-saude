@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { ageFrom } from "@/lib/dates";
@@ -56,7 +55,7 @@ export function Uploader() {
   const [items, setItems] = useState<Item[]>([]);
   const [current, setCurrent] = useState(0);
   const [saved, setSaved] = useState(0);
-  const [idle, setIdle] = useState<{ error?: string; needsKey?: boolean; notice?: string }>({});
+  const [idle, setIdle] = useState<{ error?: string; notice?: string }>({});
   const fileRef = useRef<HTMLInputElement>(null);
   const camRef = useRef<HTMLInputElement>(null);
   const batch = useRef(0); // invalida leituras de um envio cancelado
@@ -71,7 +70,7 @@ export function Uploader() {
 
   const patch = (i: number, p: Partial<Item>) => setItems((xs) => xs.map((x, j) => (j === i ? { ...x, ...p } : x)));
 
-  async function read(file: File, i: number, id: number): Promise<"ok" | "nokey"> {
+  async function read(file: File, i: number, id: number): Promise<void> {
     patch(i, { status: "lendo", extraction: null, warning: undefined });
     const { patient } = getDbSnapshot();
     try {
@@ -81,11 +80,11 @@ export function Uploader() {
         new Promise((r) => setTimeout(r, i === 0 ? 3500 : 0)),
       ]);
       if (batch.current === id) patch(i, { status: "pronto", extraction });
-      return "ok";
     } catch (err) {
-      if (err instanceof NoKeyError) return "nokey";
-      if (batch.current === id) patch(i, { status: "pronto", extraction: null, warning: "A IA não conseguiu ler este laudo agora. Tente de novo ou preencha os resultados à mão." });
-      return "ok";
+      const warning = err instanceof NoKeyError
+        ? "A leitura por IA não está disponível agora. Preencha os resultados à mão, olhando o laudo."
+        : "A IA não conseguiu ler este laudo agora. Tente de novo ou preencha os resultados à mão.";
+      if (batch.current === id) patch(i, { status: "pronto", extraction: null, warning });
     }
   }
 
@@ -126,9 +125,7 @@ export function Uploader() {
     for (let i = 0; i < ok.length; i++) {
       if (batch.current !== id) return;
       if (i > 0) await new Promise((r) => setTimeout(r, GAP_MS));
-      if ((await read(ok[i], i, id)) === "nokey") {
-        return reset({ needsKey: true, error: "Para ler laudos com IA, informe uma chave da Gemini em Configurações. Os laudos de exemplo abaixo funcionam sem chave." });
-      }
+      await read(ok[i], i, id);
     }
   }
 
@@ -203,7 +200,6 @@ export function Uploader() {
       {idle.error && (
         <p className="mb-4 rounded-2xl bg-danger-soft p-4 text-[15px] text-danger" role="alert">
           {idle.error}
-          {idle.needsKey && <> <Link href="/configuracoes" className="font-medium underline underline-offset-4">Abrir Configurações</Link></>}
         </p>
       )}
       {notice}

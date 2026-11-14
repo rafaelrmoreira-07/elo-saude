@@ -319,8 +319,8 @@ export async function respondToFile(picked: File, say: Say) {
   } catch (err) {
     if (err instanceof NoKeyError) {
       return say({
-        text: "Para ler este arquivo eu preciso da leitura por IA, que está desligada. Você pode ligar em Configurações ou testar com um dos laudos de exemplo.",
-        actions: [{ kind: "link", label: "Abrir Configurações", href: "/configuracoes" }, ...SAMPLE_FILES.map((s) => ({ kind: "sample" as const, ...s }))],
+        text: "Para ler este arquivo eu preciso da leitura por IA, que não está disponível agora. Você pode adicionar os resultados à mão ou testar com um dos laudos de exemplo.",
+        actions: [{ kind: "link", label: "Adicionar à mão", href: "/enviar" }, ...SAMPLE_FILES.map((s) => ({ kind: "sample" as const, ...s }))],
       });
     }
     return say({
