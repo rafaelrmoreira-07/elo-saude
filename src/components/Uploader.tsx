@@ -396,7 +396,7 @@ function LabReview({
         const notRead = rows.filter(isMissing).map((r) => r.name || "resultado sem nome");
         if (notRead.length)
           toast.warning(`${rows.length - notRead.length} resultados salvos, ${notRead.length} sem valor`, {
-            description: `Não foi possível ler: ${listNames(notRead)}. Abra o exame para digitar o valor quando tiver o laudo em mãos.`,
+            description: `Não foi possível ler: ${listNames(notRead)}. O laudo original ficou salvo. Para completar, envie de novo uma foto mais nítida.`,
             duration: 9000,
           });
         else toast.success(`${rows.length} resultados salvos`, { description: lab || undefined });
@@ -561,7 +561,7 @@ function LabReview({
       </div>
       {missing > 0 && !pending && (
         <p className="-mt-1 text-sm text-muted">
-          {missing === 1 ? "1 valor vai" : `${missing} valores vão`} como &quot;não lido&quot;. Você pode corrigir depois, e o médico vê o laudo original.
+          {missing === 1 ? "1 valor vai" : `${missing} valores vão`} como &quot;não lido&quot;. O laudo original fica salvo junto, e o médico pode conferir nele.
         </p>
       )}
     </div>
