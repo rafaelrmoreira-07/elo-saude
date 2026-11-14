@@ -7,7 +7,7 @@ import { FileIcon } from "./icons";
 /** De onde veio o texto: o médico precisa saber se foi lido por IA e conferido. */
 export const REPORT_SOURCE_LABEL: Record<SourceDocument["extractedBy"], string> = {
   gemini: "lido por IA e conferido pelo paciente",
-  simulado: "leitura pré-gravada, conferida pelo paciente",
+  simulado: "lido por IA, conferido pelo paciente",
   manual: "digitado pelo paciente a partir do laudo",
   seed: "importado",
 };

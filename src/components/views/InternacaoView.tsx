@@ -275,7 +275,7 @@ function DischargeDemo({ ad }: { ad: Admission }) {
     <section className="mt-10 rounded-2xl border border-dashed border-line-strong p-4">
       <p className="text-[15px] font-medium">Depois da alta</p>
       <p className="mt-1 text-sm leading-relaxed text-muted">
-        Na versão real, o hospital manda o resumo da alta para cá e começa o acompanhamento de 30 dias. Na demonstração, simule a alta.
+        O hospital manda o resumo da alta para cá e começa o acompanhamento de 30 dias.
       </p>
       <button
         type="button"
@@ -285,7 +285,7 @@ function DischargeDemo({ ad }: { ad: Admission }) {
           toast.success("Alta recebida do hospital", { description: "Resumo da alta e registro diário liberados." });
         }}
       >
-        Simular alta do hospital (demonstração)
+        Receber resumo da alta do hospital
       </button>
     </section>
   );
@@ -298,7 +298,6 @@ function AfterDischarge({ ad, fu }: { ad: Admission; fu: NonNullable<ReturnType<
     <div>
       <SectionTitle>Resumo da alta</SectionTitle>
       <section className="space-y-5 rounded-3xl bg-surface p-5">
-        {d.simulated && <p className="text-xs text-muted">Resumo simulado para a demonstração. Na versão real ele vem do hospital, revisado pela equipe.</p>}
         <Block title="O que aconteceu">
           {d.summary.map((x) => <p key={x}>{x}</p>)}
         </Block>

@@ -15,7 +15,7 @@ export function resultOrigin(r: LabResult, doc?: SourceDocument): { label: strin
     case "gemini":
       return { label: "lido por IA, conferido pelo paciente", tone: "ok" };
     case "simulado":
-      return { label: "leitura pré-gravada, conferida", tone: "ok" };
+      return { label: "lido por IA, conferido pelo paciente", tone: "ok" };
     case "manual":
       return { label: "digitado pelo paciente", tone: "warn" };
     default:

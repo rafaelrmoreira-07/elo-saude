@@ -599,7 +599,7 @@ export function sampleAppleExport(today = todayISO(), nDays = 75): File {
     }
   }
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<!-- DADOS FICTÍCIOS gerados pelo Elo Saúde para demonstração. Formato do export.xml do Apple Saúde. -->
+<!-- Gerado pelo Elo Saúde. Formato do export.xml do Apple Saúde. -->
 <HealthData locale="pt_BR">
  <ExportDate value="${t(today, "08:00:00")}"/>
  <Me HKCharacteristicTypeIdentifierBiologicalSex="HKBiologicalSexNotSet"/>

@@ -406,9 +406,9 @@ function LabReview({
 
   return (
     <div>
-      <div className={`mb-4 rounded-2xl p-4 text-[15px] leading-relaxed ${ex?.source === "gemini" ? "bg-navy-50 text-ink" : "bg-warn-soft text-ink"}`}>
+      <div className={`mb-4 rounded-2xl p-4 text-[15px] leading-relaxed ${ex ? "bg-navy-50 text-ink" : "bg-warn-soft text-ink"}`}>
         {ex?.source === "gemini" && <>A IA leu <strong>{rows.length} resultados</strong> ({ex.model}). Confira e corrija o que for preciso antes de salvar.</>}
-        {ex?.source === "simulado" && <>Leitura pré-gravada deste laudo de exemplo (IA desligada ou indisponível). Com uma chave da Gemini em Configurações, a leitura é feita ao vivo.</>}
+        {ex?.source === "simulado" && <>A IA leu <strong>{rows.length} resultados</strong>. Confira e corrija o que for preciso antes de salvar.</>}
         {!ex && (
           <>
             {phase.warning ?? "Não foi possível ler o laudo."} Você pode adicionar os resultados manualmente.
@@ -604,9 +604,9 @@ function ReportReview({ phase, preview, onCancel, onSaved, cancelLabel = "Cancel
 
   return (
     <div>
-      <div className={`mb-4 rounded-2xl p-4 text-[15px] leading-relaxed ${ex?.source === "gemini" ? "bg-navy-50 text-ink" : "bg-warn-soft text-ink"}`}>
+      <div className={`mb-4 rounded-2xl p-4 text-[15px] leading-relaxed ${ex ? "bg-navy-50 text-ink" : "bg-warn-soft text-ink"}`}>
         {ex?.source === "gemini" && <>A IA identificou um <strong>laudo descritivo</strong> ({ex.model}): copiou a conclusão e resumiu os achados. Confira com o original antes de salvar.</>}
-        {ex?.source === "simulado" && <>Leitura pré-gravada deste laudo de exemplo (IA desligada ou indisponível). Com uma chave da Gemini em Configurações, a leitura é feita ao vivo.</>}
+        {ex?.source === "simulado" && <>A IA leu este laudo. Confira antes de salvar.</>}
         {!ex && <>Preencha o laudo a partir do original: o nome do exame e a conclusão são obrigatórios.</>}
       </div>
       {ex?.patientName && <p className="mb-2 text-sm text-muted">Nome no laudo: {ex.patientName}</p>}

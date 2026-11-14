@@ -95,7 +95,7 @@ function SeriesList({ series }: { series: AnalyteSeries[] }) {
   );
 }
 
-const SOURCE_LABEL = { gemini: "lido por IA", simulado: "leitura pré-gravada", manual: "digitado", seed: "importado" } as const;
+const SOURCE_LABEL = { gemini: "lido por IA", simulado: "lido por IA", manual: "digitado", seed: "importado" } as const;
 
 /** Check animado do transitions.dev ("Success check") quando o laudo acabou de ser salvo. */
 function SuccessCheck() {

@@ -332,7 +332,7 @@ export async function respondToFile(picked: File, say: Say) {
   // Laudo descritivo (eco, eletro, ultrassom, endoscopia): mostra a conclusão como está no laudo
   if (ex.report) {
     const r = ex.report;
-    const head = `Li um laudo de *${r.examName}*${ex.lab ? ` (${ex.lab})` : ""}${ex.examDate ? `, de ${formatDate(ex.examDate)}` : ""}.${ex.source === "simulado" ? " Esta é a leitura pré-gravada do laudo de exemplo." : ""}`;
+    const head = `Li um laudo de *${r.examName}*${ex.lab ? ` (${ex.lab})` : ""}${ex.examDate ? `, de ${formatDate(ex.examDate)}` : ""}.`;
     const body = `${head}\n\n*Conclusão do laudo:* ${r.conclusion}\n\nEu não interpreto o texto: ele vai para o seu médico como está.`;
     if (!ex.examDate) {
       return say({ text: `${body}\n\nNão achei a data do exame. Na tela Adicionar você confere e preenche a data.`, actions: [{ kind: "link", label: "Abrir Adicionar", href: "/enviar" }] });
@@ -363,7 +363,6 @@ export async function respondToFile(picked: File, say: Say) {
   const header = [
     `Li *${rows.length} resultados*${ex.lab ? ` do laudo *${ex.lab}*` : ""}${ex.examDate ? `, coleta de ${formatDate(ex.examDate)}` : ""}.`,
     altered ? `${altered === 1 ? "1 está" : `${altered} estão`} fora da referência.` : "Todos dentro da referência.",
-    ex.source === "simulado" ? "Esta é a leitura pré-gravada do laudo de exemplo." : "",
   ].filter(Boolean).join(" ");
 
   if (!ex.examDate) {

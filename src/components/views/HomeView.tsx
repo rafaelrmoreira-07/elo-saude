@@ -193,7 +193,7 @@ export function HomeView() {
 
       <details className="group mt-12 rounded-2xl border border-dashed border-line-strong">
         <summary className="flex min-h-12 items-center justify-between px-4 text-[15px] font-medium text-muted">
-          Controles da demonstração
+          Trocar paciente e restaurar dados
           <ChevronDown width={18} className="transition-transform group-open:-scale-y-100" />
         </summary>
         <div className="flex flex-col gap-2 px-4 pb-4">
@@ -221,7 +221,7 @@ export function HomeView() {
               router.push("/");
             }}
           >
-            Restaurar dados de demonstração
+            Restaurar dados iniciais
           </button>
         </div>
       </details>

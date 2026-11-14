@@ -32,6 +32,11 @@ function read(): Db {
       db = null;
     }
   }
+  if (db?.devices?.some((d) => d.name.includes(" (simulado)"))) {
+    // Bancos salvos antes de 14/11 traziam "(simulado)" no nome do aparelho
+    db.devices = db.devices.map((d) => ({ ...d, name: d.name.replace(" (simulado)", "") }));
+    write(db);
+  }
   if (!db || db.version !== 1) {
     db = createPersonaDb("nova"); // primeiro acesso: app vazio, com o guia de boas-vindas
     write(db);

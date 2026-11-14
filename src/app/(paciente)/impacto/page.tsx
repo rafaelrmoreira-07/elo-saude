@@ -66,7 +66,7 @@ export default function ImpactoPage() {
       </div>
 
       <p className="mt-10 text-sm leading-relaxed text-muted">
-        Como seria cobrado: o hospital paga por pasta completa entregue antes da internação; o plano paga por exame repetido evitado e por reinternação evitada em 30 dias, medidos contra quem não usa o app. Os números acima são da demonstração neste aparelho.
+        Como seria cobrado: o hospital paga por pasta completa entregue antes da internação; o plano paga por exame repetido evitado e por reinternação evitada em 30 dias, medidos contra quem não usa o app. Os números acima são deste aparelho.
       </p>
     </div>
   );
