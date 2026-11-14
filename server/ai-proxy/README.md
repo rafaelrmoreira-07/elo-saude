@@ -13,7 +13,11 @@ os pedidos.
 4. No `.env.local` do app (e no segredo do GitHub, para o site):
    `NEXT_PUBLIC_AI_PROXY_URL=https://elo-saude-ia.<conta>.workers.dev/models`
    e apague `NEXT_PUBLIC_GEMINI_API_KEY`.
-5. No painel da Cloudflare, crie uma regra de limite de pedidos por IP.
+5. Uso justo: `wrangler kv namespace create USO`, cole o id em `wrangler.toml`
+   e ajuste `LIMITE_DIA` e `LIMITE_MES`. O usuário não vê os números; acima
+   deles o servidor responde 429 e o app oferece digitar os valores à mão.
+6. No painel da Cloudflare, crie também uma regra de limite de pedidos por IP
+   (contra rajadas).
 
 O servidor só aceita as origens de `ALLOWED_ORIGINS`, só os modelos usados
 pelo app e pedidos de até 15 MB. Ele não guarda nem registra o conteúdo.

@@ -80,7 +80,7 @@ export default function PlanosPage() {
         <Pledge>Cancele a qualquer momento, sem multa. O plano segue até o fim do período pago e depois a conta volta para o Gratuito.</Pledge>
         <Pledge>Cancelou ou voltou para o Gratuito? Todo o histórico continua aqui para ver e exportar. Só a leitura por IA volta a ter limite.</Pledge>
         <Pledge>O Elo não vende seus dados. Quem paga o serviço é você, e depois hospitais e planos que quiserem receber o histórico com a sua autorização.</Pledge>
-        <Pledge>&quot;Sem limite&quot; vale para uso pessoal. Para evitar abuso, contas com volume fora do comum podem ter a leitura pausada por um dia.</Pledge>
+        <Pledge>Os planos pagos seguem uma política de uso justo, só para evitar abuso: quem usa no dia a dia não chega perto dela. Digitar os valores à mão é sempre livre.</Pledge>
       </ul>
 
       <SectionTitle>Para hospitais, clínicas e planos de saúde</SectionTitle>
@@ -165,7 +165,7 @@ function CurrentPlan({ db, sub, cancelRequest }: { db: Db; sub: Subscription; ca
       </dl>
       {!free && (
         <p className="mt-3 text-sm text-muted">
-          Neste mês: {reads} {reads === 1 ? "laudo lido" : "laudos lidos"} por IA e {shares} {shares === 1 ? "acesso de médico ativo" : "acessos de médico ativos"}, sem limite.
+          Neste mês: {reads} {reads === 1 ? "laudo lido" : "laudos lidos"} por IA e {shares} {shares === 1 ? "acesso de médico ativo" : "acessos de médico ativos"}.
         </p>
       )}
 

@@ -10,8 +10,15 @@
  *   ALLOWED_ORIGINS  origens aceitas, separadas por vírgula
  *                    ex.: https://rafaelrmoreira-07.github.io,capacitor://localhost,https://localhost
  *
- * Limite de pedidos por IP: configure uma regra de "Rate limiting" no painel da
- * Cloudflare para este endereço (ex.: 30 pedidos por minuto por IP).
+ * Uso justo (não aparece para o usuário): cada instalação do app tem um limite
+ * de pedidos por dia e por mês, guardado no KV "USO". O app manda um código
+ * de instalação aleatório (cabeçalho X-Elo-Instalacao); sem ele, conta o IP.
+ *   LIMITE_DIA / LIMITE_MES  números (padrão 120 e 600, o teto do plano Família)
+ * Quando houver contas (login), troque a instalação pela conta e use os
+ * limites de cada plano (src/lib/plans.ts, FAIR_USE).
+ *
+ * Contra rajadas, configure também uma regra de "Rate limiting" no painel da
+ * Cloudflare (ex.: 30 pedidos por minuto por IP).
  */
 
 const API = "https://generativelanguage.googleapis.com/v1beta/models";
@@ -22,7 +29,7 @@ function cors(origin) {
   return {
     "Access-Control-Allow-Origin": origin,
     "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Headers": "Content-Type, X-Elo-Instalacao",
     "Access-Control-Max-Age": "86400",
     Vary: "Origin",
   };
@@ -52,6 +59,26 @@ const worker = {
     if (size > MAX_BYTES) return reply(413, { error: { message: "arquivo grande demais" } }, origin);
     const body = await request.text();
     if (body.length > MAX_BYTES) return reply(413, { error: { message: "arquivo grande demais" } }, origin);
+
+    // Uso justo: conta o pedido e recusa acima do limite do dia ou do mês
+    if (env.USO) {
+      const who = (request.headers.get("X-Elo-Instalacao") ?? "").replace(/[^a-zA-Z0-9-]/g, "").slice(0, 64) || `ip:${request.headers.get("CF-Connecting-IP") ?? "?"}`;
+      const now = new Date();
+      const day = now.toISOString().slice(0, 10);
+      const month = day.slice(0, 7);
+      const perDay = Number(env.LIMITE_DIA ?? 120);
+      const perMonth = Number(env.LIMITE_MES ?? 600);
+      const [d, m] = await Promise.all([env.USO.get(`d:${who}:${day}`), env.USO.get(`m:${who}:${month}`)]);
+      const usedDay = Number(d ?? 0);
+      const usedMonth = Number(m ?? 0);
+      if (usedDay >= perDay || usedMonth >= perMonth) {
+        return reply(429, { error: { message: "limite de uso justo atingido", code: "USO_JUSTO" } }, origin);
+      }
+      await Promise.all([
+        env.USO.put(`d:${who}:${day}`, String(usedDay + 1), { expirationTtl: 60 * 60 * 48 }),
+        env.USO.put(`m:${who}:${month}`, String(usedMonth + 1), { expirationTtl: 60 * 60 * 24 * 40 }),
+      ]);
+    }
 
     const upstream = await fetch(`${API}/${m[1]}:generateContent`, {
       method: "POST",

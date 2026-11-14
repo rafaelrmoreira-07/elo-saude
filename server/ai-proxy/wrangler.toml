@@ -2,6 +2,13 @@ name = "elo-saude-ia"
 main = "worker.js"
 compatibility_date = "2026-11-01"
 
+# Contagem do uso justo por instalação (crie com: wrangler kv namespace create USO)
+[[kv_namespaces]]
+binding = "USO"
+id = "COLE_AQUI_O_ID_DO_KV"
+
 [vars]
+LIMITE_DIA = "120"
+LIMITE_MES = "600"
 # Site publicado e o app de iPhone (capacitor://localhost) e Android (https://localhost)
 ALLOWED_ORIGINS = "https://rafaelrmoreira-07.github.io,capacitor://localhost,https://localhost"

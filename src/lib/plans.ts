@@ -34,6 +34,19 @@ export const FREE_LIMITS = {
   profiles: 1,
 };
 
+/**
+ * Uso justo dos planos pagos: limites de pedidos à IA aplicados no servidor
+ * (server/ai-proxy), por dia e por mês. Não aparecem para o usuário: ficam bem
+ * acima do uso típico (cerca de 2 laudos e 30 perguntas por mês) e só barram
+ * abuso. São os tetos de docs/modelo-de-negocio/modelo.py, em que a margem
+ * continua positiva. No Família, valem para a conta, somando os perfis.
+ * O Gratuito mostra os limites dele (fazem parte da oferta).
+ */
+export const FAIR_USE: Record<Exclude<PlanId, "gratuito">, { perDay: number; perMonth: number; firstImport: number }> = {
+  individual: { perDay: 60, perMonth: 350, firstImport: 30 },
+  familia: { perDay: 120, perMonth: 600, firstImport: 90 },
+};
+
 export const PLANS: Plan[] = [
   {
     id: "gratuito",
@@ -54,14 +67,14 @@ export const PLANS: Plan[] = [
   {
     id: "individual",
     name: "Individual",
-    tagline: "Uso sem limite para uma pessoa. Quanto mais usa, mais completo fica.",
+    tagline: "Para uma pessoa. Quanto mais usa, mais completo fica.",
     monthly: 14.9,
     yearly: 149,
     biennial: 269,
     profiles: 1,
     features: [
-      "Laudos lidos por IA sem limite, inclusive a pasta inteira de uma vez",
-      "Perguntas ao Elo sem limite",
+      "Leitura de laudos por IA para o dia a dia, e a pasta de laudos antigos para montar o histórico",
+      "Perguntas ao Elo e resumos para a consulta",
       "Médicos e hospitais sem limite, com prazos de até 1 ano",
       "Relógio e anel: todo o histórico e os avisos que juntam dados",
       "Resumo para a consulta e exportação em PDF, Excel e FHIR",

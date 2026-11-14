@@ -48,6 +48,21 @@ export function geminiConfigured(): boolean {
   return Boolean(PROXY || getGeminiKey()) && aiConsented();
 }
 
+/** Código aleatório desta instalação, para o uso justo no servidor (não identifica a pessoa). */
+function installId(): string {
+  const KEY = "elo-saude:instalacao";
+  try {
+    let id = localStorage.getItem(KEY);
+    if (!id) {
+      id = crypto.randomUUID();
+      localStorage.setItem(KEY, id);
+    }
+    return id;
+  } catch {
+    return "";
+  }
+}
+
 export async function generateJson<T>(opts: {
   system: string;
   parts: GeminiPart[];
@@ -66,8 +81,8 @@ export async function generateJson<T>(opts: {
       const msg = `${model}: ${(err as Error).message}`;
       console.warn("[gemini]", msg.slice(0, 200));
       errors.push(msg);
-      // Chave inválida: não adianta tentar outro modelo.
-      if (/API key not valid|API_KEY_INVALID|PERMISSION_DENIED/i.test(msg)) break;
+      // Chave inválida ou limite de uso justo: não adianta tentar outro modelo.
+      if (/API key not valid|API_KEY_INVALID|PERMISSION_DENIED|USO_JUSTO|uso justo/i.test(msg)) break;
     }
   }
   throw new GeminiUnavailableError(errors.join(" | "));
@@ -82,7 +97,7 @@ async function attempt<T>(
   const url = `${PROXY ?? API}/${encodeURIComponent(model)}:generateContent`;
   const res = await fetch(url, {
     method: "POST",
-    headers: PROXY ? { "Content-Type": "application/json" } : { "Content-Type": "application/json", "x-goog-api-key": key ?? "" },
+    headers: PROXY ? { "Content-Type": "application/json", "X-Elo-Instalacao": installId() } : { "Content-Type": "application/json", "x-goog-api-key": key ?? "" },
     signal: AbortSignal.timeout(opts.timeoutMs ?? 40_000),
     body: JSON.stringify({
       systemInstruction: { parts: [{ text: opts.system }] },
