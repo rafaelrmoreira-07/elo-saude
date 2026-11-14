@@ -22,8 +22,8 @@ type State =
   | { step: "review"; result: ImportResult };
 
 const SAMPLES = [
-  { key: "apple", title: "Exportação do Apple Saúde", desc: "exportar.zip, 75 dias, com 3 dias de batimento irregular", make: () => sampleAppleExport() },
-  { key: "android", title: "Planilha de app Android (CSV)", desc: "Exportação do Health Connect, 60 dias", make: () => sampleAndroidCsv() },
+  { key: "apple", title: "exportar.zip", desc: "Apple Saúde · 75 dias", make: () => sampleAppleExport() },
+  { key: "android", title: "health-connect.csv", desc: "Health Connect · 60 dias", make: () => sampleAndroidCsv() },
 ];
 
 /** Importar os dados do relógio ou anel a partir do arquivo que o celular exporta. */
@@ -139,7 +139,7 @@ export function WearableImport({ onBack }: { onBack: () => void }) {
         </span>
       </button>
 
-      <SectionTitle>Exemplos</SectionTitle>
+      <SectionTitle>Arquivos recentes</SectionTitle>
       <ul className="divide-y divide-line border-y border-line">
         {SAMPLES.map((s) => (
           <li key={s.key} className="flex items-center gap-3 py-3">
@@ -148,11 +148,10 @@ export function WearableImport({ onBack }: { onBack: () => void }) {
               <p className="text-sm text-muted">{s.desc}</p>
             </div>
             <DownloadLink make={s.make} />
-            <button type="button" onClick={() => read(s.make())} className="btn-secondary min-h-11 px-4 text-sm">Usar</button>
+            <button type="button" onClick={() => read(s.make())} className="btn-secondary min-h-11 px-4 text-sm">Enviar</button>
           </li>
         ))}
       </ul>
-      <p className="mt-3 text-sm leading-relaxed text-muted">Os exemplos são gerados na hora, com datas até hoje, no formato real de cada exportação.</p>
     </div>
   );
 }

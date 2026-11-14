@@ -97,10 +97,10 @@ export function DataPortability() {
             disabled={busy}
             onClick={async () => importJson(await (await fetch(asset("/exemplos/rnds-exemplo.json"))).text(), "UBS Vila Mariana")}
           >
-            Usar exemplo
+            Arquivo da UBS
           </button>
         </div>
-        <p className="mt-2 text-xs text-muted">O exemplo segue o formato de uma exportação da RNDS. A conexão direta com o Meu SUS Digital depende de credenciamento no Ministério da Saúde.</p>
+        <p className="mt-2 text-xs text-muted">O arquivo da UBS Vila Mariana segue o formato de uma exportação da RNDS. A conexão direta com o Meu SUS Digital depende de credenciamento no Ministério da Saúde.</p>
       </div>
     </div>
   );

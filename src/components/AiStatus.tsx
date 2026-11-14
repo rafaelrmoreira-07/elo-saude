@@ -38,7 +38,7 @@ export function AiStatusBanner() {
       <ScanIcon width={22} className="shrink-0 text-ink" />
       <span className="flex-1">
         <span className="block font-medium text-ink">Leitura por IA indisponível agora</span>
-        Os laudos de exemplo funcionam. Outros laudos podem ser enviados e preenchidos à mão.
+        Os laudos recentes da tela Enviar já estão lidos. Outros laudos podem ser enviados e preenchidos à mão.
       </span>
       <ChevronRight width={18} className="shrink-0 text-faint" />
     </Link>

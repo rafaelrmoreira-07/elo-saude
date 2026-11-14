@@ -85,7 +85,7 @@ function AdmissionForm({ db, admission, onSaved, onCancel }: { db: Db; admission
       procedure: "Cateterismo cardíaco eletivo",
       plannedDate: x.plannedDate || new Date(Date.now() + 9 * 86_400_000).toISOString().slice(0, 10),
       requestingDoctor: "Dr. Rafael Costa, cardiologista",
-      plan: "Plano Saúde Exemplo",
+      plan: "Vida Plena Saúde",
       cardNumber: "0001 2345 6789 0001",
       authNumber: "",
       authValidUntil: "",
@@ -108,7 +108,7 @@ function AdmissionForm({ db, admission, onSaved, onCancel }: { db: Db; admission
     >
       {!admission && (
         <button type="button" className="btn-quiet text-sm" onClick={fillExample}>
-          Preencher com um exemplo
+          Preencher automaticamente
         </button>
       )}
       <div className="grid gap-3">

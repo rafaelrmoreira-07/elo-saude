@@ -18,10 +18,10 @@ import { SectionTitle, StatusBadge } from "./ui";
 type Phase = { step: "review"; file: File; extraction: Extraction | null; warning?: string };
 
 const SAMPLES = [
-  { file: "laudo-vida-2026-11.pdf", type: "application/pdf", title: "PDF do laboratório", desc: "Laudo de nov/2026 com 14 exames" },
-  { file: "exame-papel-2016.jpg", type: "image/jpeg", title: "Foto de exame em papel", desc: "Laudo antigo de 2016, fotografado" },
-  { file: "exame-papel-carimbo-2020.jpg", type: "image/jpeg", title: "Foto difícil de ler", desc: "Papel de 2020, torto, com carimbo em cima de um valor" },
-  { file: "ecocardiograma-2025.pdf", type: "application/pdf", title: "Laudo de ecocardiograma", desc: "Exame do coração de 2025: texto, sem tabela de números" },
+  { file: "laudo-vida-2026-11.pdf", type: "application/pdf", title: "Laboratório Vida, nov/2026", desc: "PDF · 14 exames" },
+  { file: "exame-papel-2016.jpg", type: "image/jpeg", title: "Exames de 2016", desc: "Foto do laudo em papel" },
+  { file: "exame-papel-carimbo-2020.jpg", type: "image/jpeg", title: "Exames de 2020", desc: "Foto do laudo em papel, com carimbo" },
+  { file: "ecocardiograma-2025.pdf", type: "application/pdf", title: "Ecocardiograma de 2025", desc: "PDF · laudo descritivo" },
 ];
 
 
@@ -234,7 +234,7 @@ export function Uploader() {
         </span>
       </button>
 
-      <SectionTitle>Laudos de exemplo</SectionTitle>
+      <SectionTitle>Laudos recentes</SectionTitle>
       <ul className="divide-y divide-line border-y border-line">
         {SAMPLES.map((s) => (
           <li key={s.file} className="flex items-center gap-3 py-3">
@@ -243,7 +243,7 @@ export function Uploader() {
               <p className="text-sm text-muted">{s.desc}</p>
             </div>
             <a href={asset(`/exemplos/${s.file}`)} target="_blank" rel="noopener" className="btn-quiet text-sm">Ver</a>
-            <button type="button" onClick={() => sendSample(s)} className="btn-secondary min-h-11 px-4 text-sm">Usar</button>
+            <button type="button" onClick={() => sendSample(s)} className="btn-secondary min-h-11 px-4 text-sm">Enviar</button>
           </li>
         ))}
       </ul>

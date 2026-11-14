@@ -190,7 +190,7 @@ export function Onboarding() {
                   router.push("/");
                 }}
               >
-                Prefiro ver um exemplo pronto (Carlos Mendes)
+                Entrar no perfil de Carlos Mendes
               </button>
             </div>
           </form>

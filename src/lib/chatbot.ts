@@ -33,9 +33,9 @@ const has = (t: string, re: RegExp) => re.test(t);
 const STATUS_WORD: Record<LabStatus, string> = { alto: "alto", baixo: "baixo", normal: "normal", sem_faixa: "sem referência" };
 
 export const SAMPLE_FILES = [
-  { file: "laudo-vida-2026-11.pdf", mime: "application/pdf", label: "Exemplo: PDF do laboratório" },
-  { file: "exame-papel-2016.jpg", mime: "image/jpeg", label: "Exemplo: foto de exame antigo" },
-  { file: "exame-papel-carimbo-2020.jpg", mime: "image/jpeg", label: "Exemplo: foto difícil de ler" },
+  { file: "laudo-vida-2026-11.pdf", mime: "application/pdf", label: "Laboratório Vida, nov/2026 (PDF)" },
+  { file: "exame-papel-2016.jpg", mime: "image/jpeg", label: "Exames de 2016 (foto)" },
+  { file: "exame-papel-carimbo-2020.jpg", mime: "image/jpeg", label: "Exames de 2020 (foto)" },
 ];
 
 const HOURS: { re: RegExp; hours: number; label: string }[] = [
@@ -321,7 +321,7 @@ export async function respondToFile(picked: File, say: Say) {
   } catch (err) {
     if (err instanceof NoKeyError) {
       return say({
-        text: "Para ler este arquivo eu preciso da leitura por IA, que não está disponível agora. Você pode adicionar os resultados à mão ou testar com um dos laudos de exemplo.",
+        text: "Para ler este arquivo eu preciso da leitura por IA, que não está disponível agora. Você pode adicionar os resultados à mão ou enviar um dos laudos recentes da tela Enviar.",
         actions: [{ kind: "link", label: "Adicionar à mão", href: "/enviar" }, ...SAMPLE_FILES.map((s) => ({ kind: "sample" as const, ...s }))],
       });
     }
