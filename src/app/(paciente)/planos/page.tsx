@@ -102,16 +102,14 @@ function Meter({ label, used, total, neutral }: { label: string; used: number; t
   const pct = Math.min(100, Math.round((used / total) * 100));
   const over = !neutral && used >= total;
   return (
-    <div>
-      <div className="flex items-baseline justify-between gap-3 text-sm">
-        <dt className="text-muted">{label}</dt>
-        <dd className={`num font-medium ${over ? "text-warn" : "text-ink"}`}>
-          {used} de {total}
-        </dd>
-      </div>
-      <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-surface-2" aria-hidden>
+    <div className="grid grid-cols-[1fr_auto] items-baseline gap-x-3 text-sm">
+      <dt className="text-muted">{label}</dt>
+      <dd className={`num font-medium ${over ? "text-warn" : "text-ink"}`}>
+        {used} de {total}
+      </dd>
+      <dd className="col-span-2 mt-1.5 h-2 overflow-hidden rounded-full bg-surface-2" aria-hidden>
         <div className={`h-full rounded-full ${over ? "bg-warn-mark" : "bg-ink"}`} style={{ width: `${pct}%` }} />
-      </div>
+      </dd>
     </div>
   );
 }

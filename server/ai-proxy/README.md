@@ -5,7 +5,10 @@ servidor pequeno (Cloudflare Workers, plano gratuito) guarda a chave e repassa
 os pedidos.
 
 1. `npm i -g wrangler` e `wrangler login`
-2. Nesta pasta: `wrangler secret put GEMINI_API_KEY` (cole a chave)
+2. Crie a chave num projeto do Google Cloud **com faturamento ativo** (modo pago da
+   Gemini API). No modo gratuito, o Google pode usar o conteúdo para melhorar os
+   produtos e revisores humanos podem ler: não serve para dados de saúde.
+   Nesta pasta: `wrangler secret put GEMINI_API_KEY` (cole a chave)
 3. `wrangler deploy` → anote o endereço (ex.: `https://elo-saude-ia.<conta>.workers.dev`)
 4. No `.env.local` do app (e no segredo do GitHub, para o site):
    `NEXT_PUBLIC_AI_PROXY_URL=https://elo-saude-ia.<conta>.workers.dev/models`
