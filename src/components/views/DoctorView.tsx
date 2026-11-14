@@ -5,6 +5,7 @@ import { periodLabel } from "@/lib/period";
 import { useEffect, useRef, useState } from "react";
 import { CHART, LabTrendChart, WearableChart } from "@/components/charts";
 import { DoctorSummary } from "@/components/DoctorSummary";
+import { ConditionSearch } from "@/components/ConditionSearch";
 import { ShieldIcon } from "@/components/icons";
 import { RecentExams } from "@/components/RecentExams";
 import { ReportList } from "@/components/ReportList";
@@ -183,6 +184,8 @@ function Dashboard({
       <div className="mt-4 grid gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
           <DoctorSummary load={loadSummary} cacheKey={cacheKey} />
+
+          <ConditionSearch data={data} />
 
           <CoverageCard c={computeCoverage(data, share.scopes)} audience="medico" />
 
