@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { PERSONAS } from "@/lib/personas";
-import { resetDemo } from "@/lib/store";
+import { switchProfile } from "@/lib/store";
 import type { PersonaId } from "@/lib/types";
 
 /**
@@ -18,7 +18,7 @@ export function PersonaFromUrl() {
     if (!id || !PERSONAS.some((p) => p.id === id)) return;
     url.searchParams.delete("persona");
     window.history.replaceState(window.history.state, "", url.pathname + url.search + url.hash);
-    void resetDemo(id);
+    switchProfile(id, true);
   }, []);
   return null;
 }

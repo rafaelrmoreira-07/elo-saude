@@ -6,13 +6,14 @@ import { Switch } from "@/components/base/switch";
 import { ChevronRight } from "@/components/icons";
 import { AppsSection, DevicesSection } from "@/components/Connections";
 import { ProfileSettings } from "@/components/ProfileSettings";
+import { Avatar, ProfileSwitcher } from "@/components/ProfileSwitcher";
 import { ReadingQuality } from "@/components/ReadingQuality";
 import { PageHeader, SectionTitle, Skeleton } from "@/components/ui";
 import { ageFrom, formatDate } from "@/lib/dates";
 import { shareState } from "@/lib/share";
 import { asset } from "@/lib/paths";
 import { setAiConsent, updatePrefs, useDb } from "@/lib/store";
-import type { Db, HealthAlert, Patient } from "@/lib/types";
+import type { Db, HealthAlert } from "@/lib/types";
 
 /** Tipos de alerta e se podem ser silenciados. Os que pedem médico ficam sempre ligados. */
 const ALERT_PREFS: { kind: HealthAlert["kind"]; label: string; locked?: boolean }[] = [
@@ -39,7 +40,7 @@ export default function ConfiguracoesPage() {
         <Skeleton lines={5} />
       ) : (
         <>
-          <ProfileHeader patient={db.patient} editing={editing} onEdit={() => setEditing(true)} />
+          <ProfileHeader db={db} editing={editing} onEdit={() => setEditing(true)} />
 
           {editing ? (
             <div className="mt-3">
@@ -94,22 +95,20 @@ export default function ConfiguracoesPage() {
   );
 }
 
-function ProfileHeader({ patient: p, editing, onEdit }: { patient: Patient; editing: boolean; onEdit: () => void }) {
-  const initials = p.name.split(" ").filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase() || "?";
+function ProfileHeader({ db, editing, onEdit }: { db: Db; editing: boolean; onEdit: () => void }) {
+  const p = db.patient;
   return (
-    <section className="tile flex items-center gap-4">
-      <span aria-hidden className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white text-xl font-medium text-ink">
-        {initials}
-      </span>
+    <section className="tile flex items-center gap-3">
+      <Avatar id={db.personaId ?? "carlos"} name={p.name || "Novo perfil"} />
       <div className="min-w-0 flex-1">
-        <p className="truncate text-lg font-medium text-ink">{p.name || "Sem nome"}</p>
+        <ProfileSwitcher db={db} />
         <p className="text-sm text-muted">
           {p.birthDate ? `${ageFrom(p.birthDate)} anos` : "Idade não informada"}
           {p.bloodType ? ` · sangue ${p.bloodType}` : ""}
         </p>
       </div>
       {!editing && (
-        <button type="button" className="btn-secondary shrink-0" onClick={onEdit}>
+        <button type="button" className="btn-quiet shrink-0 text-sm" onClick={onEdit}>
           Editar
         </button>
       )}

@@ -11,7 +11,7 @@ import { Drawer } from "vaul";
 import { analyteSeries, fmt } from "@/lib/health";
 import { useDb } from "@/lib/store";
 import { openChat } from "@/lib/chatOpen";
-import { BedIcon, ChartIcon, ChatIcon, DoctorIcon, DownloadIcon, ScanIcon, SearchIcon, VitalsIcon } from "./icons";
+import { BedIcon, ChatIcon, DoctorIcon, DownloadIcon, ScanIcon, SearchIcon, VitalsIcon } from "./icons";
 
 /** Todas as funcionalidades, para a busca achar pelo nome ou por palavras do dia a dia. */
 const FEATURES: { label: string; hint: string; keywords: string; href?: string; icon: typeof SearchIcon }[] = [
@@ -23,7 +23,6 @@ const FEATURES: { label: string; hint: string; keywords: string; href?: string; 
   { label: "Sinais do relógio e da pressão", hint: "Gráficos de 14 a 90 dias", keywords: "pressao batimentos sono saturacao relogio wearable", href: "/sinais", icon: VitalsIcon },
   { label: "Baixar ou importar histórico (FHIR)", hint: "Levar para outro sistema ou trazer de lá", keywords: "exportar importar fhir rnds meu sus digital dados", href: "/configuracoes/dados", icon: DownloadIcon },
   { label: "Qualidade da leitura", hint: "Quanto você corrigiu dos laudos lidos", keywords: "ia leitura correcao precisao", href: "/configuracoes#qualidade", icon: ScanIcon },
-  { label: "Indicadores de resultado", hint: "O que hospitais e planos pagariam", keywords: "impacto metricas resultado negocio", href: "/impacto", icon: ChartIcon },
 ];
 import { StatusBadge } from "./ui";
 

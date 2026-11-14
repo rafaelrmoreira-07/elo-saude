@@ -2,10 +2,10 @@
 
 import { useSyncExternalStore } from "react";
 import { analyteInfo, resolveAnalyteKey } from "./analytes";
-import { resetChat } from "./chat";
-import { addDays, isValidISODate, todayISO } from "./dates";
+import { exportChat, importChat, resetChat } from "./chat";
+import { addDays, ageFrom, isValidISODate, todayISO } from "./dates";
 import { cleanPeriod } from "./period";
-import { createPersonaDb, personaWearables } from "./personas";
+import { createPersonaDb, PERSONAS, personaWearables } from "./personas";
 import { extendWearablesToToday } from "./seed";
 import { simulatedDischarge } from "./admission";
 import { newAccessCode } from "./shareCrypto";
@@ -476,8 +476,24 @@ export function updatePrefs(mutate: (prefs: NonNullable<Db["prefs"]>) => void) {
   });
 }
 
-/** Volta aos dados iniciais da persona atual (ou troca para outra persona). */
+/** Arquivos (laudos, pedidos) guardados no IndexedDB por um perfil. */
+function storedFiles(db: Db): string[] {
+  return [...db.documents.map((d) => d.storedAs), ...(db.admissions ?? []).map((a) => a.order?.storedAs)].filter((x): x is string => Boolean(x));
+}
+
+async function deleteFiles(ids: string[]) {
+  for (const id of ids) {
+    try {
+      await idbRun("readwrite", (s) => s.delete(id));
+    } catch {
+      // já não existe
+    }
+  }
+}
+
+/** Volta o perfil atual (ou o perfil indicado) aos dados iniciais. Os outros perfis ficam como estão. */
 export async function resetDemo(persona?: PersonaId) {
+  const before = storedFiles(getDbSnapshot());
   update((db) => {
     const id = persona ?? db.personaId ?? "carlos";
     for (const k of Object.keys(db)) delete (db as unknown as Record<string, unknown>)[k];
@@ -485,11 +501,67 @@ export async function resetDemo(persona?: PersonaId) {
     ensureConnections(db);
   });
   resetChat();
+  await deleteFiles(before);
+}
+
+// ---------- perfis (como contas num mesmo app) ----------
+
+/** Cada perfil fora de uso fica guardado à parte, com a conversa dele. */
+const PROFILE_PREFIX = "elo-saude:perfil:";
+
+interface StashedProfile {
+  db: Db;
+  chat: ReturnType<typeof exportChat>;
+}
+
+function readStash(id: PersonaId): StashedProfile | null {
   try {
-    await idbRun("readwrite", (s) => s.clear());
+    const raw = localStorage.getItem(PROFILE_PREFIX + id);
+    const s = raw ? (JSON.parse(raw) as StashedProfile) : null;
+    return s?.db?.version === 1 ? s : null;
   } catch {
-    // nada a limpar
+    return null;
   }
+}
+
+export interface ProfileEntry {
+  id: PersonaId;
+  name: string;
+  detail: string;
+  active: boolean;
+}
+
+/** Perfis da conta, com o nome que cada um tem hoje (o perfil novo usa o nome cadastrado). */
+export function listProfiles(db: Db): ProfileEntry[] {
+  const current = db.personaId ?? "carlos";
+  return PERSONAS.map((p) => {
+    const saved = p.id === current ? db : readStash(p.id)?.db;
+    const fallback = p.id === "nova" ? "Novo perfil" : p.name.replace(/,\s*\d+$/, "");
+    const birth = saved?.patient.birthDate;
+    const age = birth ? ageFrom(birth) : Number(p.name.match(/,\s*(\d+)$/)?.[1] ?? NaN);
+    const detail = Number.isFinite(age) ? `${age} anos` : "Perfil novo, sem dados";
+    return { id: p.id, name: saved?.patient.name?.trim() || fallback, detail, active: p.id === current };
+  });
+}
+
+/**
+ * Troca de perfil sem perder nada: o perfil atual é guardado com a conversa,
+ * e o escolhido volta como estava (ou começa com os dados iniciais).
+ * fresh = abre o perfil com os dados iniciais (links de demonstração).
+ */
+export function switchProfile(id: PersonaId, fresh = false) {
+  const cur = getDbSnapshot();
+  const curId = cur.personaId ?? "carlos";
+  if (curId !== id) localStorage.setItem(PROFILE_PREFIX + curId, JSON.stringify({ db: cur, chat: exportChat() } satisfies StashedProfile));
+  const saved = fresh || curId === id ? null : readStash(id);
+  const next = saved?.db ?? createPersonaDb(id);
+  ensureConnections(next);
+  update((db) => {
+    for (const k of Object.keys(db)) delete (db as unknown as Record<string, unknown>)[k];
+    Object.assign(db, next);
+  });
+  importChat(saved?.chat ?? null);
+  localStorage.removeItem(PROFILE_PREFIX + id);
 }
 
 function newToken(): string {

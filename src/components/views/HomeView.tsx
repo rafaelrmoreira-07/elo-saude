@@ -1,18 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { AiStatusBanner } from "@/components/AiStatus";
 import { ExamSearch } from "@/components/ExamSearch";
-import { AlertIcon, BedIcon, ChatIcon, ChevronDown, ChevronRight, DoctorIcon, DropIcon, GaugeIcon, HeartIcon, MoonIcon, ScanIcon, WatchIcon } from "@/components/icons";
+import { AlertIcon, BedIcon, ChatIcon, ChevronRight, DoctorIcon, DropIcon, GaugeIcon, HeartIcon, MoonIcon, ScanIcon, WatchIcon } from "@/components/icons";
 import { openChat } from "@/lib/chatOpen";
 import { followUp } from "@/lib/admission";
 import { AlertCard, Disclaimer, RowLink, SectionLink, SectionTitle, Skeleton, Spark, StatusBadge } from "@/components/ui";
 import NumberFlow from "@number-flow/react";
 import { ageFrom, formatDate } from "@/lib/dates";
 import { analyteSeries, computeAlerts, fmt, formatRef, hasBloodPressure, wearableSnapshot } from "@/lib/health";
-import { PERSONAS } from "@/lib/personas";
-import { resetDemo, useDb } from "@/lib/store";
+import { useDb } from "@/lib/store";
 import type { WearableDay } from "@/lib/types";
 
 function greeting(now = new Date()) {
@@ -22,7 +20,6 @@ function greeting(now = new Date()) {
 
 export function HomeView() {
   const db = useDb();
-  const router = useRouter();
   if (!db) return <Skeleton lines={5} />;
 
   const p = db.patient;
@@ -190,41 +187,6 @@ export function HomeView() {
           Você ainda não enviou exames. <Link href="/enviar" className="btn-quiet">Enviar o primeiro</Link>
         </p>
       )}
-
-      <details className="group mt-12 rounded-2xl border border-dashed border-line-strong">
-        <summary className="flex min-h-12 items-center justify-between px-4 text-[15px] font-medium text-muted">
-          Trocar paciente e restaurar dados
-          <ChevronDown width={18} className="transition-transform group-open:-scale-y-100" />
-        </summary>
-        <div className="flex flex-col gap-2 px-4 pb-4">
-          <label className="block">
-            <span className="label">Persona</span>
-            <select
-              className="input"
-              value={db.personaId ?? "carlos"}
-              onChange={async (e) => {
-                const id = e.target.value as (typeof PERSONAS)[number]["id"];
-                if (!confirm(`Trocar para "${PERSONAS.find((x) => x.id === id)?.name}"? Os exames enviados e os acessos criados serão apagados.`)) return;
-                await resetDemo(id);
-                router.push("/");
-              }}
-            >
-              {PERSONAS.map((x) => <option key={x.id} value={x.id}>{x.name}: {x.resumo}</option>)}
-            </select>
-          </label>
-          <Link href="/impacto" className="btn-secondary">Ver indicadores de resultado</Link>
-          <button
-            className="btn-danger"
-            onClick={async () => {
-              if (!confirm("Apagar os exames enviados, os acessos e a conversa, e voltar aos dados iniciais?")) return;
-              await resetDemo();
-              router.push("/");
-            }}
-          >
-            Restaurar dados iniciais
-          </button>
-        </div>
-      </details>
 
       <Disclaimer />
     </div>

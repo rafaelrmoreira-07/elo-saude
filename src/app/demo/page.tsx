@@ -6,7 +6,7 @@ import { LogoMark } from "@/components/icons";
 import { absoluteUrl, asset } from "@/lib/paths";
 import { PERSONAS } from "@/lib/personas";
 import { shareState } from "@/lib/share";
-import { resetDemo, useDb } from "@/lib/store";
+import { resetDemo, switchProfile, useDb } from "@/lib/store";
 
 const PHONE_W = 390;
 const PHONE_H = 844;
@@ -47,17 +47,13 @@ export default function DemoPage() {
               value={db?.personaId ?? "carlos"}
               onChange={async (e) => {
                 const id = e.target.value as (typeof PERSONAS)[number]["id"];
-                if (!confirm(`Trocar para "${PERSONAS.find((x) => x.id === id)?.name}"? Os dados voltam ao início.`)) return;
-                await resetDemo(id);
+                switchProfile(id);
                 setReloadKey((k) => k + 1);
               }}
             >
               {PERSONAS.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
             </select>
           </label>
-          <a href={asset("/impacto/")} target="_blank" rel="noopener" className="rounded-xl bg-white/10 px-3.5 py-2 text-sm font-medium hover:bg-white/15">
-            Indicadores
-          </a>
           <button
             className="rounded-xl bg-white/10 px-3.5 py-2 text-sm font-medium text-danger-line hover:bg-white/15"
             onClick={async () => {

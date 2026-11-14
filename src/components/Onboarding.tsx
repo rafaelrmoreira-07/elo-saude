@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ageFrom, todayISO } from "@/lib/dates";
 import { asset } from "@/lib/paths";
-import { resetDemo, saveConsents, saveProfile } from "@/lib/store";
+import { saveConsents, saveProfile, switchProfile } from "@/lib/store";
 import { FileIcon, LogoMark, ShieldIcon, WatchIcon } from "./icons";
 import { MAX_BATCH } from "./Uploader";
 
@@ -186,7 +186,7 @@ export function Onboarding() {
                 type="button"
                 className="btn-quiet justify-center text-sm"
                 onClick={async () => {
-                  await resetDemo("carlos");
+                  switchProfile("carlos");
                   router.push("/");
                 }}
               >

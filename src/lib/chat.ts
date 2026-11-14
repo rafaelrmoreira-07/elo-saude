@@ -178,6 +178,15 @@ export function resetChat() {
   write(null);
 }
 
+/** Troca de perfil: a conversa vai junto com cada perfil. */
+export function exportChat(): ChatState | null {
+  return read();
+}
+
+export function importChat(s: ChatState | null) {
+  write(s?.version === 1 ? s : null);
+}
+
 // ---------- alertas ----------
 
 export function alertDraft(a: HealthAlert): BotDraft {
