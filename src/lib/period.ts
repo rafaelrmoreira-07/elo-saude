@@ -53,3 +53,14 @@ export function periodLabel(p?: Period | null): string {
   if (p.from) return `Desde ${formatDate(p.from)}`;
   return `Até ${formatDate(p.to!)}`;
 }
+
+/** Texto curto para o botão de período: nome do atalho ou as datas escolhidas. */
+export function periodButtonText(key: string, p: Period, all = "Tudo"): string {
+  const short = (iso: string) => formatDate(iso, { day: "2-digit", month: "2-digit", year: "2-digit" });
+  if (key === "tudo") return all;
+  if (key !== "personalizado") return PERIOD_PRESETS.find((x) => x.key === key)?.label ?? all;
+  if (p.from && p.to) return `${short(p.from)} a ${short(p.to)}`;
+  if (p.from) return `Desde ${short(p.from)}`;
+  if (p.to) return `Até ${short(p.to)}`;
+  return "Escolher datas";
+}

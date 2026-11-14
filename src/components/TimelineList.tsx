@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { formatDate } from "@/lib/dates";
-import { inPeriod, PERIOD_PRESETS, type Period } from "@/lib/period";
+import { inPeriod, periodButtonText, type Period } from "@/lib/period";
+import { PeriodButton } from "./PeriodButton";
 import type { TimelineEvent, TimelineKind } from "@/lib/timeline";
 import { PeriodPicker } from "./PeriodPicker";
-import { AlertIcon, CalendarIcon, ChevronDown, ChevronRight, LabIcon, PillIcon, StethoscopeIcon, SyringeIcon } from "./icons";
+import { AlertIcon, ChevronRight, LabIcon, PillIcon, StethoscopeIcon, SyringeIcon } from "./icons";
 
 const KINDS: { key: TimelineKind; label: string; icon: React.ComponentType<{ width?: number }>; dot: string }[] = [
   { key: "exame", label: "Exames", icon: LabIcon, dot: "bg-ink text-white" },
@@ -32,11 +32,7 @@ export function TimelineList({ events: all }: { events: TimelineEvent[] }) {
   const [period, setPeriod] = useState<Period>({});
   const [periodKey, setPeriodKey] = useState("tudo");
   const [open, setOpen] = useState(false);
-  const short = (iso: string) => formatDate(iso, { day: "2-digit", month: "2-digit", year: "2-digit" });
-  const periodText =
-    periodKey !== "personalizado"
-      ? periodKey === "tudo" ? "Período" : PERIOD_PRESETS.find((p) => p.key === periodKey)?.label ?? "Período"
-      : period.from && period.to ? `${short(period.from)} a ${short(period.to)}` : period.from ? `Desde ${short(period.from)}` : period.to ? `Até ${short(period.to)}` : "Escolher datas";
+  const periodText = periodButtonText(periodKey, period);
   const filtered = periodKey !== "tudo";
   const events = all.filter((e) => inPeriod(e.date, period));
   const oldest = all.reduce((m, e) => (e.date < m ? e.date : m), all[0]?.date ?? "");
@@ -56,17 +52,7 @@ export function TimelineList({ events: all }: { events: TimelineEvent[] }) {
     years.at(-1)!.items.push(e);
   }
 
-  const periodButton = (
-    <button
-      type="button"
-      onClick={() => setOpen((v) => !v)}
-      aria-expanded={open}
-      aria-controls="periodo-linha"
-      className={`inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium transition-colors ${filtered ? "border-ink bg-ink text-white" : "border-line-strong bg-white text-ink hover:border-ink"}`}
-    >
-      <CalendarIcon width={16} /> {periodText} <ChevronDown width={14} className={`transition-transform ${open ? "rotate-180" : ""}`} />
-    </button>
-  );
+  const periodButton = <PeriodButton text={periodText} active={filtered} open={open} onToggle={() => setOpen((v) => !v)} controls="periodo-linha" />;
   const periodPanel = (
     <div id="periodo-linha" className={open ? "mb-2 mt-1" : "hidden"}>
       <PeriodPicker

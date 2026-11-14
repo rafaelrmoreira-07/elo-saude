@@ -13,7 +13,8 @@ import { Checkbox } from "./base/checkbox";
 import { CopyIcon, ShieldIcon, WhatsappIcon } from "./icons";
 import { SlidingTabs } from "./SlidingTabs";
 import { PeriodPicker } from "./PeriodPicker";
-import { periodLabel, type Period } from "@/lib/period";
+import { periodButtonText, periodLabel, type Period } from "@/lib/period";
+import { PeriodButton } from "./PeriodButton";
 
 const DURATIONS = [
   { hours: 1, label: "1 hora" },
@@ -35,6 +36,8 @@ export function ShareForm() {
   const [scopes, setScopes] = useState<Scope[]>([...SCOPES]);
   const [hours, setHours] = useState(24);
   const [period, setPeriod] = useState<Period>({});
+  const [periodKey, setPeriodKey] = useState("tudo");
+  const [periodOpen, setPeriodOpen] = useState(false);
   const oldest = useDb()?.labResults.reduce((m, r) => (r.date < m ? r.date : m), "9999") ?? undefined;
 
   if (token) return <ShareResult key={token} token={token} onDone={() => setToken(null)} />;
@@ -66,7 +69,21 @@ export function ShareForm() {
       </div>
 
       <fieldset>
-        <legend className="label">O que o médico pode ver</legend>
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <legend className="label mb-0">O que o médico pode ver</legend>
+          <PeriodButton text={periodButtonText(periodKey, period)} active={periodKey !== "tudo"} open={periodOpen} onToggle={() => setPeriodOpen((v) => !v)} controls="periodo-medico" />
+        </div>
+        <div id="periodo-medico" className={periodOpen ? "mb-3 space-y-2" : "hidden"}>
+          <PeriodPicker
+            label="De qual período"
+            onChange={(p, k) => {
+              setPeriod(p);
+              setPeriodKey(k);
+            }}
+            min={oldest && oldest !== "9999" ? oldest : undefined}
+          />
+          <p className="text-sm text-muted">{periodLabel(period)}. O médico só vê exames, consultas, vacinas, remédios e medições desse intervalo.</p>
+        </div>
         <div className="divide-y divide-line rounded-2xl bg-surface">
           {SCOPES.map((s) => (
             <label key={s} className="flex min-h-14 cursor-pointer items-center gap-3 px-4 text-[15px]">
@@ -76,12 +93,6 @@ export function ShareForm() {
           ))}
         </div>
       </fieldset>
-
-      <div>
-        <p className="label">De qual período</p>
-        <PeriodPicker label="De qual período" onChange={(p) => setPeriod(p)} min={oldest && oldest !== "9999" ? oldest : undefined} />
-        <p className="mt-2 text-sm text-muted">{periodLabel(period)}. O médico só vê exames, consultas, vacinas, remédios e medições desse intervalo.</p>
-      </div>
 
       <div>
         <p className="label" id="prazo">Por quanto tempo</p>
