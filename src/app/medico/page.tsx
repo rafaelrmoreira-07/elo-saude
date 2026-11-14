@@ -17,7 +17,6 @@ export default function MedicoPage() {
             <Logo />
             <span className="hidden border-l border-line pl-3 text-[15px] text-muted sm:inline">Compartilhado pelo paciente</span>
           </div>
-          <span className="rounded-full bg-accent-soft px-2.5 py-1 text-xs font-medium text-ink">Dados fictícios</span>
         </div>
       </header>
       <Suspense fallback={<p className="p-8 text-center text-[15px] text-muted">Carregando relatório…</p>}>

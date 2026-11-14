@@ -164,8 +164,8 @@ export function createSeedDb(now = new Date()): Db {
     ],
     wearableDays: seedWearables(today),
     devices: [
-      { id: "dev-relogio", name: "Relógio inteligente (simulado)", kind: "relogio", metrics: ["Frequência cardíaca", "Variabilidade (VFC)", "Ritmo irregular", "Sono", "SpO2", "Passos"], connectedAt: addDays(today, -90) + "T09:00:00.000Z" },
-      { id: "dev-pressao", name: "Medidor de pressão Bluetooth (simulado)", kind: "medidor_pressao", metrics: ["Pressão arterial"], connectedAt: addDays(today, -90) + "T09:05:00.000Z" },
+      { id: "dev-relogio", name: "Relógio inteligente", kind: "relogio", metrics: ["Frequência cardíaca", "Variabilidade (VFC)", "Ritmo irregular", "Sono", "SpO2", "Passos"], connectedAt: addDays(today, -90) + "T09:00:00.000Z" },
+      { id: "dev-pressao", name: "Medidor de pressão Bluetooth", kind: "medidor_pressao", metrics: ["Pressão arterial"], connectedAt: addDays(today, -90) + "T09:05:00.000Z" },
     ],
     shares: [],
     admissions: [],

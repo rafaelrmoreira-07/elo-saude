@@ -108,7 +108,7 @@ function AdmissionForm({ db, admission, onSaved, onCancel }: { db: Db; admission
     >
       {!admission && (
         <button type="button" className="btn-quiet text-sm" onClick={fillExample}>
-          Preencher com um exemplo fictício
+          Preencher com um exemplo
         </button>
       )}
       <div className="grid gap-3">

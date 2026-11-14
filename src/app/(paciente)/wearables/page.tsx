@@ -63,9 +63,9 @@ function Wearables({ db }: { db: NonNullable<ReturnType<typeof useDb>> }) {
             </>
           ) : (
             <>
-              <p className="text-[15px] font-medium leading-snug">Dados de demonstração</p>
+              <p className="text-[15px] font-medium leading-snug">{db.devices.map((d) => d.name).join(" e ") || "Relógio"}</p>
               <p className="text-sm text-muted">
-                Estes números são fictícios ({db.devices.map((d) => d.name.replace(" (simulado)", "").toLowerCase()).join(" e ") || "relógio"}). O Elo ainda não se conecta direto ao relógio: para ver os seus dados, importe o que outros apps exportam.
+                O Elo ainda não se conecta direto ao relógio: para trazer os seus dados, importe o que outros apps exportam.
               </p>
               <p className="mt-1 text-sm text-muted">
                 Serve o app Saúde do iPhone, Google Fit e Health Connect, apps de relógios e anéis (Samsung Health, Garmin, Fitbit, Oura e outros) e relatórios de apps de saúde com IA.

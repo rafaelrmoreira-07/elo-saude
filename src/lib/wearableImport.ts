@@ -546,7 +546,7 @@ export function summarize(days: WearableDay[], k: WearableMetric): { value: numb
 
 /** Frase de origem dos dados, para a tela Sinais e para o médico. */
 export function sourceLine(src: WearableSource | undefined): string {
-  if (!src || src.kind === "simulado") return "simulação de demonstração (dados fictícios gerados pelo app)";
+  if (!src || src.kind === "simulado") return "relógio e medidor ligados ao app";
   const when = src.importedAt ? ` em ${formatDate(src.importedAt.slice(0, 10))}` : "";
   const how = src.readBy === "ia" ? "organizado pela IA" : "lido no aparelho do paciente";
   return `${src.label ?? "arquivo"}, importado${when} (${how})`;
@@ -565,8 +565,8 @@ export function sampleAppleExport(today = todayISO(), nDays = 75): File {
   let seed = 7;
   const r = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
   const recs: string[] = [];
-  const watch = 'sourceName="Apple Watch (fictício)" sourceVersion="11.1"';
-  const phone = 'sourceName="iPhone (fictício)" sourceVersion="19.1"';
+  const watch = 'sourceName="Apple Watch" sourceVersion="11.1"';
+  const phone = 'sourceName="iPhone" sourceVersion="19.1"';
   const t = (d: string, hh: string) => `${d} ${hh} -0300`;
   const irregularDays = new Set([addDays(today, -11), addDays(today, -6), addDays(today, -2)]);
   for (let i = nDays - 1; i >= 0; i--) {

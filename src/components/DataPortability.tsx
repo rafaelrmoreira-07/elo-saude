@@ -95,12 +95,12 @@ export function DataPortability() {
             type="button"
             className="btn-secondary"
             disabled={busy}
-            onClick={async () => importJson(await (await fetch(asset("/exemplos/rnds-exemplo.json"))).text(), "UBS Vila Mariana (fictícia)")}
+            onClick={async () => importJson(await (await fetch(asset("/exemplos/rnds-exemplo.json"))).text(), "UBS Vila Mariana")}
           >
             Usar exemplo
           </button>
         </div>
-        <p className="mt-2 text-xs text-muted">O exemplo é fictício e imita o formato de uma exportação da RNDS. A conexão direta com o Meu SUS Digital depende de credenciamento no Ministério da Saúde.</p>
+        <p className="mt-2 text-xs text-muted">O exemplo segue o formato de uma exportação da RNDS. A conexão direta com o Meu SUS Digital depende de credenciamento no Ministério da Saúde.</p>
       </div>
     </div>
   );

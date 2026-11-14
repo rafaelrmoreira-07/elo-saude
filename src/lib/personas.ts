@@ -117,7 +117,7 @@ function juliana(now: Date): Db {
     ],
     wearableDays: julianaWearables(today),
     devices: [
-      { id: "dev-anel", name: "Anel inteligente (simulado)", kind: "anel", metrics: ["Frequência cardíaca", "Variabilidade (VFC)", "Sono", "SpO2", "Passos"], connectedAt: addDays(today, -150) + "T08:00:00.000Z" },
+      { id: "dev-anel", name: "Anel inteligente", kind: "anel", metrics: ["Frequência cardíaca", "Variabilidade (VFC)", "Sono", "SpO2", "Passos"], connectedAt: addDays(today, -150) + "T08:00:00.000Z" },
     ],
     shares: [],
   };
@@ -186,7 +186,7 @@ function pedro(now: Date): Db {
     { date: "2026-08-18", lab: "Lab Aurora", values: { glicose: 85, colesterol_total: 162, ldl: 92, hdl: 55, triglicerides: 80, creatinina: 1.05, hemoglobina: 15.4 } },
   ]);
   const devices: WearableDevice[] = [
-    { id: "dev-galaxy", name: "Relógio inteligente (simulado)", kind: "relogio", metrics: ["Frequência cardíaca", "Variabilidade (VFC)", "Ritmo irregular", "Sono", "SpO2", "Passos"], connectedAt: addDays(today, -200) + "T10:00:00.000Z" },
+    { id: "dev-galaxy", name: "Relógio inteligente", kind: "relogio", metrics: ["Frequência cardíaca", "Variabilidade (VFC)", "Ritmo irregular", "Sono", "SpO2", "Passos"], connectedAt: addDays(today, -200) + "T10:00:00.000Z" },
   ];
   return {
     version: 1,

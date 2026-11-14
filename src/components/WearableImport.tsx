@@ -141,7 +141,7 @@ export function WearableImport({ onBack }: { onBack: () => void }) {
         </span>
       </button>
 
-      <SectionTitle>Exemplos fictícios</SectionTitle>
+      <SectionTitle>Exemplos</SectionTitle>
       <ul className="divide-y divide-line border-y border-line">
         {SAMPLES.map((s) => (
           <li key={s.key} className="flex items-center gap-3 py-3">
@@ -233,7 +233,7 @@ function Review({ result, onCancel, onSave }: { result: ImportResult; onCancel: 
       {replacing && (
         <p className="mt-4 flex gap-2.5 rounded-2xl bg-warn-soft p-4 text-[15px] leading-relaxed text-ink">
           <AlertIcon width={20} className="mt-0.5 shrink-0 text-warn" />
-          Os dados do relógio que estavam aqui são uma simulação de demonstração. Ao salvar, eles são trocados pelos dados deste arquivo.
+          Ao salvar, os dados do relógio que estavam aqui são trocados pelos dados deste arquivo.
         </p>
       )}
       {merging && <p className="mt-4 text-sm text-muted">Os dias deste arquivo se juntam aos que você já importou; se um dia aparecer nos dois, vale o deste arquivo.</p>}

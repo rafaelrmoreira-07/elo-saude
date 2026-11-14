@@ -252,7 +252,7 @@ export function Uploader() {
         ))}
       </ul>
       <p className="mt-6 text-sm leading-relaxed text-muted">
-        Com a leitura ligada, o arquivo vai do seu navegador direto para a Gemini (Google), só para leitura. O histórico fica salvo apenas neste aparelho. Os exemplos são fictícios.
+        Com a leitura ligada, o arquivo vai do seu navegador direto para a Gemini (Google), só para leitura. O histórico fica salvo apenas neste aparelho.
       </p>
     </div>
   );

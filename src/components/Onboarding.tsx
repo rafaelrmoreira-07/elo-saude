@@ -147,7 +147,7 @@ export function Onboarding() {
               </label>
             </div>
             {error && <p className="mt-4 rounded-2xl bg-danger-soft p-3 text-[15px] text-danger" role="alert">{error}</p>}
-            <p className="mt-6 text-sm text-muted">Tudo fica salvo neste navegador. Use dados fictícios ou os seus.</p>
+            <p className="mt-6 text-sm text-muted">Tudo fica salvo neste navegador.</p>
             <div className="mt-auto flex flex-col gap-2 pt-8">
               <button type="submit" className="btn-primary w-full">Começar e enviar meu primeiro exame</button>
               <button type="button" className="btn-secondary w-full" onClick={() => setStep(STEPS.length - 1)}>Voltar</button>

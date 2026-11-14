@@ -17,7 +17,6 @@ export default function PacienteLayout({ children }: { children: React.ReactNode
           <Logo />
         </Link>
         <div className="flex items-center">
-          <span className="mr-1 rounded-full bg-accent-soft px-2.5 py-1 text-xs font-medium text-ink">Dados fictícios</span>
           <ExamSearch variant="icon" />
           <Link
             href="/configuracoes"

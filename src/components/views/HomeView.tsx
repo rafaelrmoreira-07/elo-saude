@@ -198,7 +198,7 @@ export function HomeView() {
         </summary>
         <div className="flex flex-col gap-2 px-4 pb-4">
           <label className="block">
-            <span className="label">Persona (dados sintéticos)</span>
+            <span className="label">Persona</span>
             <select
               className="input"
               value={db.personaId ?? "carlos"}
