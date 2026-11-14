@@ -1,0 +1,48 @@
+{
+  "name": "hub-saude",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "npx --yes serve@14 out -l 3000",
+    "lint": "eslint",
+    "exemplos": "node scripts/gerar-exemplos.mjs",
+    "exemplos:dificil": "node scripts/gerar-exemplo-dificil.mjs",
+    "exemplos:laudo": "node scripts/gerar-exemplo-laudo-descritivo.mjs",
+    "typecheck": "next typegen && tsc --noEmit",
+    "icones": "node scripts/gerar-icones.mjs",
+    "build:pages": "NEXT_PUBLIC_BASE_PATH=/Challenge-Poli next build"
+  },
+  "dependencies": {
+    "@base-ui/react": "^1.9.0",
+    "@number-flow/react": "^0.6.2",
+    "@phosphor-icons/react": "^2.1.10",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
+    "fflate": "^0.8.3",
+    "motion": "^14.13.0",
+    "next": "16.4.5",
+    "qrcode": "^1.5.4",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "recharts": "^3.10.1",
+    "sonner": "^2.0.8",
+    "tailwind-merge": "^3.7.0",
+    "vaul": "^1.1.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/turbopack": "^4",
+    "@types/node": "^20",
+    "@types/qrcode": "^1.5.6",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.5",
+    "pdf-lib": "^1.17.1",
+    "sharp": "^0.35.5",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

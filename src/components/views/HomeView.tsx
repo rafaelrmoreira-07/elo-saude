@@ -1,0 +1,291 @@
+"use client";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { AiStatusBanner } from "@/components/AiStatus";
+import { ExamSearch } from "@/components/ExamSearch";
+import { AlertIcon, BedIcon, ChatIcon, ChevronDown, ChevronRight, DoctorIcon, DropIcon, GaugeIcon, HeartIcon, MoonIcon, ScanIcon, WatchIcon } from "@/components/icons";
+import { openChat } from "@/lib/chatOpen";
+import { followUp } from "@/lib/admission";
+import { AlertCard, Disclaimer, RowLink, SectionLink, SectionTitle, Skeleton, Spark, StatusBadge } from "@/components/ui";
+import NumberFlow from "@number-flow/react";
+import { ageFrom, formatDate } from "@/lib/dates";
+import { analyteSeries, computeAlerts, fmt, formatRef, hasBloodPressure, wearableSnapshot } from "@/lib/health";
+import { PERSONAS } from "@/lib/personas";
+import { resetDemo, simulateIrregularRhythm, useDb } from "@/lib/store";
+import type { WearableDay } from "@/lib/types";
+
+function greeting(now = new Date()) {
+  const h = now.getHours();
+  return h < 12 ? "Bom dia" : h < 18 ? "Boa tarde" : "Boa noite";
+}
+
+export function HomeView() {
+  const db = useDb();
+  const router = useRouter();
+  if (!db) return <Skeleton lines={5} />;
+
+  const p = db.patient;
+  const all = computeAlerts(db);
+  const insights = all.filter((a) => a.kind === "cruzado");
+  const alerts = all.filter((a) => a.kind !== "cruzado");
+  const hasWearables = db.wearableDays.length > 0;
+  const hasBp = hasBloodPressure(db.wearableDays);
+  const hasExams = db.labResults.length > 0;
+  const w = wearableSnapshot(db.wearableDays);
+  const last14 = db.wearableDays.slice(-14);
+  const altered = analyteSeries(db.labResults).filter((s) => s.status === "alto" || s.status === "baixo");
+  const meds = db.medications.filter((m) => !m.endDate);
+  const bpHigh = (w.systolic ?? 0) >= 130 || (w.diastolic ?? 0) >= 80;
+  const spo2Low = w.spo2Min != null && w.spo2Min < 90;
+  const stale = hasWearables && w.until < new Date().toISOString().slice(0, 10);
+  const today = new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" });
+  const fu = followUp(db);
+  const posAlta = fu?.active ? fu : null;
+
+  return (
+    <div>
+      <header className="t-reveal">
+        <p className="text-[15px] text-muted">{today.charAt(0).toUpperCase() + today.slice(1)}</p>
+        <h1 className="display mt-1">
+          {greeting()}, {p.name.split(" ")[0]}
+        </h1>
+        <p className="mt-2 text-[15px] text-muted">
+          {ageFrom(p.birthDate)} anos{p.bloodType ? `, sangue ${p.bloodType}` : ""}
+        </p>
+      </header>
+
+      {/* Ficha: o que qualquer profissional precisa saber primeiro */}
+      <dl className="mt-5 grid grid-cols-2 gap-2">
+        <div className="rounded-2xl bg-danger-soft p-3.5">
+          <dt className="text-sm font-medium text-danger">Alergia</dt>
+          <dd className="mt-0.5 text-[15px] font-medium leading-snug text-ink">{p.allergies.join(", ") || "Nenhuma conhecida"}</dd>
+        </div>
+        <div className="rounded-2xl bg-surface p-3.5">
+          <dt className="text-sm font-medium text-muted">Remédios em uso</dt>
+          <dd className="mt-0.5 text-[15px] font-medium leading-snug text-ink">
+            {meds.length ? meds.map((m) => <span key={m.id} className="block">{m.name} {m.dose}</span>) : "Nenhum"}
+          </dd>
+        </div>
+      </dl>
+
+      {posAlta && (
+        <Link href="/internacao#registro" className="lift mt-4 flex items-center gap-4 rounded-3xl bg-ink p-5 text-white">
+          <BedIcon width={28} className="shrink-0 text-accent" />
+          <span className="flex-1">
+            <span className="block text-sm text-navy-200">Pós-alta · dia {posAlta.day} de {posAlta.total}</span>
+            <span className="block text-lg font-normal tracking-[-0.02em]">{posAlta.checkedInToday ? "Registro de hoje feito" : "Faça o registro de hoje"}</span>
+          </span>
+          <ChevronRight width={18} className="shrink-0 text-navy-200" />
+        </Link>
+      )}
+
+      {/* Atalhos: tudo o que o app faz, a um toque */}
+      <nav aria-label="Atalhos" className="mt-4 grid grid-cols-2 gap-2">
+        <Shortcut href="/enviar" icon={<ScanIcon width={22} />} title="Adicionar exame" hint="Foto ou PDF" primary />
+        <Shortcut onClick={openChat} icon={<ChatIcon width={22} />} title="Perguntar ao Elo" hint="Exames, sinais, remédios" />
+        <Shortcut href="/compartilhar" icon={<DoctorIcon width={22} />} title="Relatório" hint="Para a consulta" />
+        <Shortcut href="/internacao" icon={<BedIcon width={22} />} title="Internação" hint={posAlta ? `Pós-alta, dia ${posAlta.day}` : "Pasta para o hospital"} />
+      </nav>
+
+      <AiStatusBanner />
+
+      {insights.length > 0 && (
+        <>
+          <SectionTitle>Dados que se conectam</SectionTitle>
+          <div className="space-y-2">
+            {insights.map((a, i) => <AlertCard key={a.id} alert={a} defaultOpen={i === 0} />)}
+          </div>
+        </>
+      )}
+
+      <SectionTitle>{alerts.length ? `Alertas (${alerts.length})` : "Alertas"}</SectionTitle>
+      {alerts.length ? (
+        <div className="space-y-2">
+          {alerts.map((a, i) => <AlertCard key={a.id} alert={a} defaultOpen={i === 0 && a.severity === "procure_medico"} />)}
+        </div>
+      ) : (
+        <p className="tile text-[15px] text-muted">Nenhum alerta. Eu aviso na Conversa se aparecer algum.</p>
+      )}
+
+      <SectionTitle action={hasWearables ? <SectionLink href="/wearables">Ver gráficos</SectionLink> : undefined}>{stale ? `Sinais até ${formatDate(w.until, { day: "2-digit", month: "2-digit" })}` : "Sinais dos últimos 7 dias"}</SectionTitle>
+      {!hasWearables ? (
+        <div className="tile flex items-start gap-3">
+          <WatchIcon width={26} className="mt-0.5 shrink-0 text-faint" />
+          <div>
+            <p className="text-[15px] font-medium text-ink">Nenhum dado de relógio ou anel</p>
+            <p className="mt-0.5 text-[15px] text-muted">
+              Exames, remédios e vacinas funcionam do mesmo jeito. Para trazer batimento, sono e passos, exporte os dados do celular e envie aqui.
+            </p>
+            <Link href="/enviar/?tipo=relogio" className="btn-quiet -ml-1 text-sm">Importar dados do relógio</Link>
+          </div>
+        </div>
+      ) : (
+      <div className="grid grid-cols-2 gap-2">
+        {/* Até quatro cartões, só com o que foi medido (cada aparelho mede coisas diferentes) */}
+        {[
+          w.restingHr != null && (
+            <Vital key="hr" icon={<HeartIcon />} label="Batimentos em repouso" unit="bpm" note="média" days={last14} metric="restingHr">
+              <NumberFlow value={w.restingHr} locales="pt-BR" />
+            </Vital>
+          ),
+          w.sleepHours != null && (
+            <Vital key="sono" icon={<MoonIcon />} label="Sono" unit="h por noite" note="média" days={last14} metric="sleepHours">
+              <NumberFlow value={w.sleepHours} locales="pt-BR" format={{ minimumFractionDigits: 1, maximumFractionDigits: 1 }} />
+            </Vital>
+          ),
+          w.spo2Min != null && (
+            <Vital key="spo2" icon={<DropIcon />} label="Saturação mínima" unit="%" note={spo2Low ? "abaixo de 90%" : "menor valor"} warn={spo2Low} days={last14} metric="spo2Min">
+              <NumberFlow value={w.spo2Min} locales="pt-BR" />
+            </Vital>
+          ),
+          hasBp && w.systolic != null && w.diastolic != null && (
+            <Vital key="pa" icon={<GaugeIcon />} label="Pressão" unit="mmHg" note={bpHigh ? "acima de 130/80" : "média"} warn={bpHigh} days={last14} metric="systolic">
+              <NumberFlow value={w.systolic} locales="pt-BR" />
+              <span>/</span>
+              <NumberFlow value={w.diastolic} locales="pt-BR" />
+            </Vital>
+          ),
+          w.steps != null && (
+            <Vital key="passos" icon={<WatchIcon />} label="Passos" unit="por dia" note="média" days={last14} metric="steps">
+              <NumberFlow value={w.steps} locales="pt-BR" />
+            </Vital>
+          ),
+        ]
+          .filter(Boolean)
+          .slice(0, 4)}
+      </div>
+      )}
+
+      <SectionTitle action={<SectionLink href="/exames">Todos os exames</SectionLink>}>Exames alterados</SectionTitle>
+      <div className="mb-3">
+        <ExamSearch />
+      </div>
+      {altered.length ? (
+        <ul className="divide-y divide-line border-y border-line">
+          {altered.slice(0, 5).map((s) => (
+            <li key={s.key}>
+              <RowLink
+                href={`/exame/?a=${encodeURIComponent(s.key)}`}
+                trailing={
+                  <span className="text-right">
+                    <span className="num block text-[17px] font-medium">
+                      {s.latest.value != null ? fmt(s.latest.value) : s.latest.valueText} <span className="text-xs font-normal text-muted">{s.unit}</span>
+                    </span>
+                    <StatusBadge status={s.status} />
+                  </span>
+                }
+              >
+                <p className="truncate text-[15px] font-medium">{s.name}</p>
+                <p className="num text-sm text-muted">Referência {formatRef(s.latest)}</p>
+                <p className="num text-sm text-muted">Coleta {formatDate(s.latest.date)}</p>
+              </RowLink>
+            </li>
+          ))}
+        </ul>
+      ) : hasExams ? (
+        <p className="tile text-[15px] text-muted">Seus últimos resultados estão dentro da referência.</p>
+      ) : (
+        <p className="tile text-[15px] text-muted">
+          Você ainda não enviou exames. <Link href="/enviar" className="btn-quiet">Enviar o primeiro</Link>
+        </p>
+      )}
+
+      <details className="group mt-12 rounded-2xl border border-dashed border-line-strong">
+        <summary className="flex min-h-12 items-center justify-between px-4 text-[15px] font-medium text-muted">
+          Controles da demonstração
+          <ChevronDown width={18} className="transition-transform group-open:-scale-y-100" />
+        </summary>
+        <div className="flex flex-col gap-2 px-4 pb-4">
+          <label className="block">
+            <span className="label">Persona (dados sintéticos)</span>
+            <select
+              className="input"
+              value={db.personaId ?? "carlos"}
+              onChange={async (e) => {
+                const id = e.target.value as (typeof PERSONAS)[number]["id"];
+                if (!confirm(`Trocar para "${PERSONAS.find((x) => x.id === id)?.name}"? Os exames enviados e os acessos criados serão apagados.`)) return;
+                await resetDemo(id);
+                router.push("/");
+              }}
+            >
+              {PERSONAS.map((x) => <option key={x.id} value={x.id}>{x.name}: {x.resumo}</option>)}
+            </select>
+          </label>
+          <Link href="/impacto" className="btn-secondary">Ver indicadores de resultado</Link>
+          <button className="btn-secondary" disabled={!hasWearables} onClick={() => simulateIrregularRhythm()}>
+            Simular batimentos irregulares no relógio
+          </button>
+          <button
+            className="btn-danger"
+            onClick={async () => {
+              if (!confirm("Apagar os exames enviados, os acessos e a conversa, e voltar aos dados iniciais?")) return;
+              await resetDemo();
+              router.push("/");
+            }}
+          >
+            Restaurar dados de demonstração
+          </button>
+        </div>
+      </details>
+
+      <Disclaimer />
+    </div>
+  );
+}
+
+function Vital({
+  icon,
+  label,
+  unit,
+  note,
+  warn,
+  days,
+  metric,
+  children,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  unit: string;
+  note: string;
+  warn?: boolean;
+  days: WearableDay[];
+  metric: keyof Omit<WearableDay, "date">;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className={`rounded-2xl p-4 ${warn ? "bg-warn-soft" : "bg-surface"}`}>
+      <p className="flex items-center gap-1.5 text-sm font-medium leading-tight text-muted">
+        <span className="shrink-0 [&>svg]:h-4 [&>svg]:w-4">{icon}</span>
+        {label}
+      </p>
+      <p className="big-num mt-3 flex items-baseline text-ink">{children}</p>
+      <p className="text-sm text-muted">{unit}</p>
+      <div className="mt-3 flex items-end justify-between gap-2">
+        <p className={`flex items-center gap-1 text-xs ${warn ? "font-medium text-warn" : "text-muted"}`}>
+          {warn && <AlertIcon width={12} />}
+          {note}
+        </p>
+        <Spark values={days.flatMap((d) => (d[metric] == null ? [] : [d[metric] as number]))} width={56} height={22} />
+      </div>
+    </div>
+  );
+}
+
+function Shortcut({ href, onClick, icon, title, hint, primary }: { href?: string; onClick?: () => void; icon: React.ReactNode; title: string; hint: string; primary?: boolean }) {
+  const cls = `lift flex min-h-24 flex-col justify-between gap-3 rounded-2xl p-4 text-left ${primary ? "bg-ink text-white" : "bg-surface text-ink"}`;
+  const body = (
+    <>
+      <span className={`flex h-10 w-10 items-center justify-center rounded-xl ${primary ? "bg-accent text-ink" : "bg-white"}`}>{icon}</span>
+      <span>
+        <span className="block text-[15px] font-medium leading-tight">{title}</span>
+        <span className={`block text-sm ${primary ? "text-navy-200" : "text-muted"}`}>{hint}</span>
+      </span>
+    </>
+  );
+  return href ? (
+    <Link href={href} className={cls}>{body}</Link>
+  ) : (
+    <button type="button" onClick={onClick} className={cls}>{body}</button>
+  );
+}
