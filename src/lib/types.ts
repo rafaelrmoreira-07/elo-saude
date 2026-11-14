@@ -278,6 +278,16 @@ export interface Db {
   checkins?: CheckIn[];
   readingStats?: Record<string, ReadingStat>;
   fhirExports?: number;
+  /** Preferências de avisos (Configurações). Ausente = tudo ligado. */
+  prefs?: Prefs;
+}
+
+/** Quais alertas aparecem como aviso no topo da tela. */
+export interface Prefs {
+  /** false = não mostrar aviso no topo da tela para alertas novos. */
+  toast?: boolean;
+  /** false para um tipo = não avisar no topo da tela. Os de médico ficam sempre ligados. */
+  notify?: Partial<Record<HealthAlert["kind"], boolean>>;
 }
 
 export type AlertSeverity = "atencao" | "procure_medico";

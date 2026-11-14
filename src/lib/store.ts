@@ -285,6 +285,14 @@ export function saveProfile(profile: {
   });
 }
 
+/** Preferências de avisos em Configurações. */
+export function updatePrefs(mutate: (prefs: NonNullable<Db["prefs"]>) => void) {
+  update((db) => {
+    db.prefs = { ...db.prefs };
+    mutate(db.prefs);
+  });
+}
+
 /** Volta aos dados iniciais da persona atual (ou troca para outra persona). */
 export async function resetDemo(persona?: PersonaId) {
   update((db) => {

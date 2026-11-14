@@ -19,6 +19,9 @@ export function ChatNotifier() {
     const fresh = syncAlerts(db.patient.name.split(" ")[0], computeAlerts(db));
     for (const a of fresh) {
       const urgent = a.severity === "procure_medico";
+      // Preferências de Configurações > Avisos. Os que pedem médico sempre avisam.
+      const locked = urgent || a.kind === "ritmo_irregular" || a.kind === "apneia";
+      if (!locked && (db.prefs?.toast === false || db.prefs?.notify?.[a.kind] === false)) continue;
       toast[urgent ? "error" : "warning"](urgent ? `Procure um médico: ${a.title}` : a.title, {
         id: `alerta-${a.id}`,
         description: a.message,

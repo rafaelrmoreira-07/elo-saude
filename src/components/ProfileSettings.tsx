@@ -11,14 +11,14 @@ import type { Patient } from "@/lib/types";
  * Perfil de saúde e contato de emergência (ideia do Plinio, reescrita sobre o
  * visual atual). O que é salvo aqui aparece no topo da tela do médico.
  */
-export function ProfileSettings() {
+export function ProfileSettings({ onDone }: { onDone?: () => void } = {}) {
   const db = useDb();
   if (!db) return <div className="tile h-40 animate-pulse" />;
   // key: recria o formulário quando a persona muda
-  return <ProfileForm key={`${db.personaId}-${db.createdAt}`} patient={db.patient} />;
+  return <ProfileForm key={`${db.personaId}-${db.createdAt}`} patient={db.patient} onDone={onDone} />;
 }
 
-function ProfileForm({ patient }: { patient: Patient }) {
+function ProfileForm({ patient, onDone }: { patient: Patient; onDone?: () => void }) {
   const [name, setName] = useState(patient.name);
   const [birthDate, setBirthDate] = useState(patient.birthDate);
   const [sex, setSex] = useState<"F" | "M">(patient.sex);
@@ -43,6 +43,7 @@ function ProfileForm({ patient }: { patient: Patient }) {
       emergencyContact: ecName.trim() ? { name: ecName, phone: ecPhone } : null,
     });
     toast.success("Perfil salvo");
+    onDone?.();
   }
 
   return (
@@ -91,7 +92,14 @@ function ProfileForm({ patient }: { patient: Patient }) {
         </label>
       </div>
       {error && <p className="text-sm text-danger" role="alert">{error}</p>}
-      <button className="btn-primary w-full">Salvar perfil</button>
+      {onDone ? (
+        <div className="grid grid-cols-2 gap-2">
+          <button type="button" className="btn-secondary" onClick={onDone}>Cancelar</button>
+          <button className="btn-primary">Salvar</button>
+        </div>
+      ) : (
+        <button className="btn-primary w-full">Salvar perfil</button>
+      )}
     </form>
   );
 }
