@@ -1,6 +1,8 @@
 # Elo Saúde · hub de saúde pessoal
 
-> **Sites da apresentação de 14/11/2026** (versão do primeiro commit deste repositório):
+> **Site:** https://rafaelrmoreira-07.github.io/elo-saude/ (publicado sozinho a cada push no `main`, pelo `.github/workflows/pages.yml`)
+>
+> Sites da apresentação de 14/11/2026 (versão do primeiro commit deste repositório):
 > https://suzetemirandasilva5601-cpu.github.io/Challenge-Poli/ · reserva: https://rafaelrmoreira-07.github.io/Challenge-Poli/
 
 

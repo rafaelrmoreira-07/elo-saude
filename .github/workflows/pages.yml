@@ -1,0 +1,53 @@
+# Publica o site no GitHub Pages a cada push no main.
+# Endereço: https://rafaelrmoreira-07.github.io/elo-saude/
+#
+# Antes de funcionar (uma vez, pelo dono do repositório):
+#   1. Settings › Pages › Source: "GitHub Actions".
+#   2. Repositório público (ou plano pago do GitHub, para Pages em repositório privado).
+#   3. Opcional, para a leitura por IA: Settings › Secrets and variables › Actions ›
+#      New repository secret com o nome NEXT_PUBLIC_GEMINI_API_KEY.
+#      A chave vai dentro do site publicado: use uma chave só para isso, restrita ao
+#      endereço do site e à Gemini API, num projeto sem cobrança ativada.
+name: Publicar site
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+        env:
+          NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
+          NEXT_PUBLIC_GEMINI_API_KEY: ${{ secrets.NEXT_PUBLIC_GEMINI_API_KEY }}
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
