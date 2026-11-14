@@ -24,7 +24,8 @@ export function SlidingTabs({ items, active, onChange, label, memoryKey }: { ite
       if (!el) return;
       if (!animate) p.style.transition = "none";
       p.style.width = `${el.offsetWidth}px`;
-      p.style.transform = `translateX(${el.offsetLeft - 3}px)`;
+      // offsetLeft já conta o respiro de 3px da barra; subtrair encostava o seletor na borda esquerda
+      p.style.transform = `translateX(${el.offsetLeft}px)`;
       if (!animate) {
         void p.offsetWidth;
         p.style.transition = "";

@@ -213,7 +213,7 @@ summary::-webkit-details-marker {
   z-index: 1;
   flex: 1;
   display: flex;
-  min-height: 40px;
+  min-height: 44px;
   align-items: center;
   justify-content: center;
   border-radius: 11px;
@@ -221,12 +221,27 @@ summary::-webkit-details-marker {
   font-size: 15px;
   font-weight: 500;
   color: var(--color-muted);
-  transition: color var(--duration-fast) var(--ease-smooth-out);
+  cursor: pointer;
+  transition:
+    color var(--duration-fast) var(--ease-smooth-out),
+    background-color var(--duration-fast) var(--ease-smooth-out),
+    transform 90ms var(--ease-smooth-out);
 }
 .t-tab[aria-current="page"],
 .t-tab[aria-pressed="true"],
 .t-tab:hover {
   color: var(--color-ink);
+}
+/* Aba não selecionada: mostra que dá para clicar (fundo leve no hover e afunda ao tocar) */
+.t-tab:not([aria-current="page"]):not([aria-pressed="true"]):hover {
+  background-color: rgb(255 255 255 / 0.55);
+}
+.t-tab:active {
+  transform: scale(0.97);
+}
+.t-tab:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 1px;
 }
 .t-tabs-pill {
   position: absolute;
