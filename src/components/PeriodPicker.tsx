@@ -14,6 +14,7 @@ export function PeriodPicker({
   onChange,
   presets = PERIOD_PRESETS,
   initial = "tudo",
+  initialPeriod,
   resolve = (k) => presetPeriod(k as PeriodPreset),
   min,
 }: {
@@ -21,13 +22,15 @@ export function PeriodPicker({
   onChange: (p: Period, key: string) => void;
   presets?: { key: string; label: string }[];
   initial?: string;
+  /** Datas já escolhidas (quando o seletor reaparece em outro lugar da tela). */
+  initialPeriod?: Period;
   resolve?: (key: string) => Period;
   /** Data mais antiga com dados, para limitar o calendário. */
   min?: string;
 }) {
   const [key, setKey] = useState(initial);
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
+  const [from, setFrom] = useState(initial === "personalizado" ? initialPeriod?.from ?? "" : "");
+  const [to, setTo] = useState(initial === "personalizado" ? initialPeriod?.to ?? "" : "");
   const max = todayISO();
   const custom = key === "personalizado";
 

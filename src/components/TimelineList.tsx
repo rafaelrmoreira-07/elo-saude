@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { inPeriod, type Period } from "@/lib/period";
+import { formatDate } from "@/lib/dates";
+import { inPeriod, PERIOD_PRESETS, type Period } from "@/lib/period";
 import type { TimelineEvent, TimelineKind } from "@/lib/timeline";
 import { PeriodPicker } from "./PeriodPicker";
-import { AlertIcon, ChevronRight, LabIcon, PillIcon, StethoscopeIcon, SyringeIcon } from "./icons";
+import { AlertIcon, CalendarIcon, ChevronDown, ChevronRight, LabIcon, PillIcon, StethoscopeIcon, SyringeIcon } from "./icons";
 
 const KINDS: { key: TimelineKind; label: string; icon: React.ComponentType<{ width?: number }>; dot: string }[] = [
   { key: "exame", label: "Exames", icon: LabIcon, dot: "bg-ink text-white" },
@@ -29,6 +30,14 @@ const month = (iso: string) => new Date(iso + "T12:00:00Z").toLocaleDateString("
 export function TimelineList({ events: all }: { events: TimelineEvent[] }) {
   const [hidden, setHidden] = useState<Set<TimelineKind>>(new Set());
   const [period, setPeriod] = useState<Period>({});
+  const [periodKey, setPeriodKey] = useState("tudo");
+  const [open, setOpen] = useState(false);
+  const short = (iso: string) => formatDate(iso, { day: "2-digit", month: "2-digit", year: "2-digit" });
+  const periodText =
+    periodKey !== "personalizado"
+      ? periodKey === "tudo" ? "Período" : PERIOD_PRESETS.find((p) => p.key === periodKey)?.label ?? "Período"
+      : period.from && period.to ? `${short(period.from)} a ${short(period.to)}` : period.from ? `Desde ${short(period.from)}` : period.to ? `Até ${short(period.to)}` : "Escolher datas";
+  const filtered = periodKey !== "tudo";
   const events = all.filter((e) => inPeriod(e.date, period));
   const oldest = all.reduce((m, e) => (e.date < m ? e.date : m), all[0]?.date ?? "");
   const visible = events.filter((e) => !hidden.has(e.kind));
@@ -47,11 +56,34 @@ export function TimelineList({ events: all }: { events: TimelineEvent[] }) {
     years.at(-1)!.items.push(e);
   }
 
+  const periodButton = (
+    <button
+      type="button"
+      onClick={() => setOpen((v) => !v)}
+      aria-expanded={open}
+      aria-controls="periodo-linha"
+      className={`inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium transition-colors ${filtered ? "border-ink bg-ink text-white" : "border-line-strong bg-white text-ink hover:border-ink"}`}
+    >
+      <CalendarIcon width={16} /> {periodText} <ChevronDown width={14} className={`transition-transform ${open ? "rotate-180" : ""}`} />
+    </button>
+  );
+  const periodPanel = (
+    <div id="periodo-linha" className={open ? "mb-2 mt-1" : "hidden"}>
+      <PeriodPicker
+        label="Período da linha do tempo"
+        initial={periodKey}
+        initialPeriod={period}
+        onChange={(p, k) => {
+          setPeriod(p);
+          setPeriodKey(k);
+        }}
+        min={oldest.slice(0, 10) || undefined}
+      />
+    </div>
+  );
+
   return (
     <div>
-      <div className="mb-3">
-        <PeriodPicker label="Período da linha do tempo" onChange={(p) => setPeriod(p)} min={oldest.slice(0, 10) || undefined} />
-      </div>
       <div className="mb-2 flex flex-wrap gap-2" role="group" aria-label="Mostrar na linha do tempo">
         {KINDS.map(({ key, label }) => {
           const on = !hidden.has(key);
@@ -71,11 +103,15 @@ export function TimelineList({ events: all }: { events: TimelineEvent[] }) {
         })}
       </div>
 
-      {years.map(({ year, items }) => (
+      {!years.length && <div className="mt-6 flex justify-end">{periodButton}</div>}
+      {!years.length && periodPanel}
+      {years.map(({ year, items }, yi) => (
         <section key={year} aria-labelledby={`ano-${year}`}>
-          <h2 id={`ano-${year}`} className="num sticky top-[60px] z-10 -mx-5 mt-6 bg-white/95 px-5 py-2 text-3xl font-normal tracking-[-0.03em] text-ink backdrop-blur">
-            {year}
-          </h2>
+          <div className="sticky top-[60px] z-10 -mx-5 mt-6 flex items-center justify-between gap-3 bg-white/95 px-5 py-2 backdrop-blur">
+            <h2 id={`ano-${year}`} className="num text-3xl font-normal tracking-[-0.03em] text-ink">{year}</h2>
+            {yi === 0 && periodButton}
+          </div>
+          {yi === 0 && periodPanel}
           <ol className="divide-y divide-line">
             {items.map((e) => {
               const k = BY_KIND[e.kind];
