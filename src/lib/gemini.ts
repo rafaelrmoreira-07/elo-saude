@@ -1,7 +1,10 @@
 /**
- * Cliente da Gemini API chamado direto do navegador. A chave é digitada pela
- * pessoa em Configurações e fica só no localStorage deste navegador: nunca é
- * embutida no site publicado.
+ * Cliente da Gemini API chamado direto do navegador. A chave vem do próprio
+ * app (NEXT_PUBLIC_GEMINI_API_KEY, no arquivo .env.local, fora do git). Uma
+ * chave salva neste navegador (localStorage), se houver, tem preferência.
+ *
+ * Atenção: no site estático, NEXT_PUBLIC_* vai dentro do JavaScript publicado.
+ * Use uma chave temporária, restrita por site (HTTP referrer) e só à Gemini API.
  *
  * Tenta cada modelo em ordem; se um estiver sobrecarregado ou demorar demais,
  * passa para o próximo.
@@ -9,6 +12,8 @@
 
 const API = "https://generativelanguage.googleapis.com/v1beta/models";
 const KEY_STORAGE = "elo-saude:gemini-key";
+/** Chave embutida pelo app no build (temporária para a demonstração). */
+const APP_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY?.trim() || null;
 export const MODELS = ["gemini-3.5-flash", "gemini-3-flash-preview", "gemini-3.8-flash"];
 
 export type GeminiPart = { text: string } | { inlineData: { mimeType: string; data: string } };
@@ -17,7 +22,7 @@ export class GeminiUnavailableError extends Error {}
 
 export function getGeminiKey(): string | null {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem(KEY_STORAGE);
+  return localStorage.getItem(KEY_STORAGE) || APP_KEY;
 }
 
 export function setGeminiKey(key: string | null) {
