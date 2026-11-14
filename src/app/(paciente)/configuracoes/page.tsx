@@ -70,6 +70,9 @@ export default function ConfiguracoesPage() {
             </>
           )}
 
+          <SectionTitle>Plano</SectionTitle>
+          <LinkCard href="/planos" title="Gratuito" text="Veja os planos Individual e Família." />
+
           <Devices db={db} />
           <ReadingSettings />
           <Notifications db={db} />
