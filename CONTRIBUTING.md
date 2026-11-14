@@ -1,5 +1,3 @@
-> ⛔ **Versão congelada até o fim da apresentação de 14/11/2026.** Não altere o `main` nem publique o site. Veja `AGENTS.md`.
-
 # Como contribuir
 
 Guia rápido para quem entra no grupo.

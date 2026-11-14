@@ -16,7 +16,7 @@ Modo apresentação (para projetar): https://suzetemirandasilva5601-cpu.github.i
 - [ ] Faça um teste de leitura de laudo, depois restaure de novo.
 - [ ] Opcional: tenha o `exame-papel-2016.jpg` impresso, para fotografar ao vivo com o celular de vocês.
 - [ ] Laudos de exemplo em Enviar: PDF do laboratório, foto de 2016, foto difícil de 2020 (fecha a lacuna do histórico) e ecocardiograma de 2025 (laudo descritivo). Ver `docs/LIMITACOES.md`, seções 8 e 9.
-- [ ] Apresentar pelo site congelado (ver "Versão congelada" no README).
+- [ ] Apresentar pelo site da apresentação (ver o README).
 
 ## Roteiro
 
