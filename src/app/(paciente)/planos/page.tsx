@@ -4,13 +4,14 @@ import Link from "next/link";
 import { useState } from "react";
 import { BackIcon, CheckIcon, ShieldIcon } from "@/components/icons";
 import { PageHeader, SectionTitle } from "@/components/ui";
-import { FREE_LIMITS, PLANS, formatPrice, monthsFree, type Plan, type PlanId } from "@/lib/plans";
+import { CURRENT_PLAN, FREE_LIMITS, PLANS, formatPrice, monthsFree, type Plan, type PlanId } from "@/lib/plans";
+import { PERSONAS } from "@/lib/personas";
 import { shareState } from "@/lib/share";
 import { useDb } from "@/lib/store";
 import type { Db } from "@/lib/types";
 
-/** Plano atual da conta. Enquanto a cobrança não existe, todos começam no Gratuito. */
-const CURRENT: PlanId = "gratuito";
+/** Plano atual da conta (vários perfis no aparelho = Família). */
+const CURRENT: PlanId = CURRENT_PLAN;
 
 export default function PlanosPage() {
   const db = useDb();
@@ -67,6 +68,7 @@ export default function PlanosPage() {
 }
 
 function Usage({ db }: { db: Db }) {
+  const plan = PLANS.find((p) => p.id === CURRENT)!;
   const now = new Date();
   const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   const reads = db.documents.filter((d) => d.uploadedAt?.startsWith(month) && (d.extractedBy === "gemini" || d.extractedBy === "simulado")).length;
@@ -74,14 +76,24 @@ function Usage({ db }: { db: Db }) {
   return (
     <section aria-labelledby="uso" className="tile mt-4">
       <h2 id="uso" className="text-[15px] font-medium text-ink">
-        Seu plano: Gratuito
+        Seu plano: {plan.name}
       </h2>
-      <dl className="mt-3 space-y-3">
-        <Meter label="Laudos lidos por IA neste mês" used={reads} total={FREE_LIMITS.aiReadsPerMonth} />
-        <Meter label="Acessos de médico ativos" used={shares} total={FREE_LIMITS.activeShares} />
-        <Meter label="Perfis" used={1} total={FREE_LIMITS.profiles} neutral />
-      </dl>
-      <p className="mt-3 text-xs leading-relaxed text-muted">Nesta versão, os limites ainda não bloqueiam nada: todos os recursos estão liberados.</p>
+      {plan.id === "gratuito" ? (
+        <dl className="mt-3 space-y-3">
+          <Meter label="Laudos lidos por IA neste mês" used={reads} total={FREE_LIMITS.aiReadsPerMonth} />
+          <Meter label="Acessos de médico ativos" used={shares} total={FREE_LIMITS.activeShares} />
+          <Meter label="Perfis" used={1} total={FREE_LIMITS.profiles} neutral />
+        </dl>
+      ) : (
+        <>
+          <dl className="mt-3 space-y-3">
+            <Meter label="Perfis neste aparelho" used={PERSONAS.length} total={plan.profiles} neutral />
+          </dl>
+          <p className="mt-3 text-sm text-muted">
+            Neste mês: {reads} {reads === 1 ? "laudo lido" : "laudos lidos"} por IA e {shares} {shares === 1 ? "acesso de médico ativo" : "acessos de médico ativos"}, sem limite.
+          </p>
+        </>
+      )}
     </section>
   );
 }
@@ -196,7 +208,7 @@ function FamilyExplainer() {
       <SectionTitle>Como funciona o plano Família</SectionTitle>
       <div className="tile">
         <p className="text-[15px] leading-relaxed text-muted">
-          Uma pessoa da família organiza tudo. Cada perfil tem o próprio histórico, separado dos outros, e a troca é feita no topo da tela.
+          Uma pessoa da família organiza tudo. Cada perfil tem o próprio histórico, separado dos outros, e a troca é feita em Configurações, tocando no nome.
         </p>
         <ul className="mt-4 space-y-2">
           {FAMILY.map((p, i) => (

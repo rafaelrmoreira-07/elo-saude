@@ -12,6 +12,8 @@ import { PageHeader, SectionTitle, Skeleton } from "@/components/ui";
 import { ageFrom, formatDate } from "@/lib/dates";
 import { shareState } from "@/lib/share";
 import { asset } from "@/lib/paths";
+import { PERSONAS } from "@/lib/personas";
+import { CURRENT_PLAN, PLANS } from "@/lib/plans";
 import { setAiConsent, updatePrefs, useDb } from "@/lib/store";
 import type { Db, HealthAlert } from "@/lib/types";
 
@@ -74,7 +76,7 @@ export default function ConfiguracoesPage() {
           )}
 
           <SectionTitle>Plano</SectionTitle>
-          <LinkCard href="/planos" title="Gratuito" text="Veja os planos Individual e Família." />
+          <LinkCard href="/planos" title={PLANS.find((p) => p.id === CURRENT_PLAN)!.name} text={`${PERSONAS.length} de ${PLANS.find((p) => p.id === CURRENT_PLAN)!.profiles} perfis neste aparelho. Veja os planos.`} />
 
           <AppsSection db={db} />
           <DevicesSection db={db} />

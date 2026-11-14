@@ -63,7 +63,7 @@ export function ProfileSwitcher({ db }: { db: Db }) {
         <Drawer.Content className="fixed inset-x-0 bottom-0 z-50 mx-auto flex max-h-[85dvh] max-w-md flex-col rounded-t-[28px] bg-white outline-none">
           <div className="mx-auto mt-3 h-1.5 w-11 shrink-0 rounded-full bg-line-strong" aria-hidden />
           <Drawer.Title className="px-5 pt-4 text-center text-lg font-medium text-ink">Trocar de perfil</Drawer.Title>
-          <Drawer.Description className="px-5 pt-1 text-center text-sm text-muted">Cada perfil guarda os próprios exames, sinais e conversa.</Drawer.Description>
+          <Drawer.Description className="px-5 pt-1 text-center text-sm text-muted">Plano Família: até 5 perfis, cada um com os próprios exames, sinais e conversa.</Drawer.Description>
           <ul className="mt-3 min-h-0 flex-1 overflow-y-auto overscroll-contain px-3">
             {profiles.map((p) => (
               <li key={p.id}>

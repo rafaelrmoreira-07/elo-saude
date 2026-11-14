@@ -18,6 +18,12 @@ export interface Plan {
   highlight?: string;
 }
 
+/**
+ * Plano desta conta. Vários perfis no mesmo aparelho (a troca de perfil em
+ * Configurações) é o plano Família; o Gratuito permite um perfil só.
+ */
+export const CURRENT_PLAN: PlanId = "familia";
+
 export const FREE_LIMITS = {
   /** Laudos lidos por IA por mês. Digitar à mão é sempre livre. */
   aiReadsPerMonth: 5,
