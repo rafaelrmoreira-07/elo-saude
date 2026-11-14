@@ -2,15 +2,12 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { toast } from "sonner";
-import { useAiEnabled } from "@/components/AiStatus";
 import { Switch } from "@/components/base/switch";
 import { ChevronRight } from "@/components/icons";
 import { ProfileSettings } from "@/components/ProfileSettings";
 import { ReadingQuality } from "@/components/ReadingQuality";
 import { PageHeader, SectionTitle, Skeleton } from "@/components/ui";
 import { ageFrom, formatDate } from "@/lib/dates";
-import { MODELS, setGeminiKey, testGeminiKey } from "@/lib/gemini";
 import { shareState } from "@/lib/share";
 import { updatePrefs, useDb } from "@/lib/store";
 import type { Db, HealthAlert, Patient } from "@/lib/types";
@@ -144,73 +141,10 @@ function Devices({ db }: { db: Db }) {
   );
 }
 
-/** Leitura de laudos pela Gemini e a qualidade da leitura (já existiam nas Configurações atuais). */
+/** Qualidade da leitura dos laudos pela IA. A chave da IA é configurada pelo app, não pelo usuário. */
 function ReadingSettings() {
-  const enabled = useAiEnabled();
-  const [key, setKey] = useState("");
-  const [testing, setTesting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function save(e: React.FormEvent) {
-    e.preventDefault();
-    if (!key.trim()) return;
-    setGeminiKey(key);
-    setKey("");
-    setError(null);
-    setTesting(true);
-    const id = toast.loading("Testando a chave…");
-    const r = await testGeminiKey();
-    setTesting(false);
-    if (r.ok) {
-      toast.success("Leitura de laudos ligada", { id, description: `Modelo ${r.model}` });
-    } else {
-      if (r.error === "Chave inválida.") setGeminiKey(null);
-      toast.error("A chave não funcionou", { id, description: r.error });
-      setError(r.error);
-    }
-  }
-
   return (
     <>
-      <SectionTitle>Leitura de laudos</SectionTitle>
-      <div className="tile space-y-4">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <p className="text-[15px] font-medium" id="ia-estado">{enabled == null ? "…" : enabled ? "Ligada neste aparelho" : "Desligada"}</p>
-            <p className="text-sm text-muted">Usa a Gemini para ler fotos e PDFs de laudos.</p>
-          </div>
-          <Switch
-            aria-labelledby="ia-estado"
-            checked={Boolean(enabled)}
-            onCheckedChange={(on) => {
-              if (!on) {
-                setGeminiKey(null);
-                toast("Leitura de laudos desligada", { description: "A chave foi apagada deste aparelho." });
-              } else {
-                document.getElementById("chave")?.focus();
-              }
-            }}
-          />
-        </div>
-        {!enabled && (
-          <form onSubmit={save} className="space-y-2">
-            <label htmlFor="chave" className="label">Chave da Gemini</label>
-            <div className="flex gap-2">
-              <input id="chave" type="password" className="input" placeholder="Cole a chave aqui" value={key} onChange={(e) => setKey(e.target.value)} autoComplete="off" autoCapitalize="none" autoCorrect="off" />
-              <button className="btn-primary shrink-0" disabled={testing || !key.trim()}>Salvar</button>
-            </div>
-            {error && <p className="text-sm text-danger" role="alert">{error}</p>}
-            <p className="text-sm text-muted">
-              Crie uma chave gratuita no{" "}
-              <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" className="font-medium text-ink underline underline-offset-4">Google AI Studio</a>.
-            </p>
-          </form>
-        )}
-        <p className="text-sm leading-relaxed text-muted">
-          A chave fica só neste navegador e vai direto para o Google. Não salve em computador compartilhado. Modelos, em ordem: {MODELS.join(", ")}.
-        </p>
-      </div>
-
       <SectionTitle id="qualidade">Qualidade da leitura</SectionTitle>
       <ReadingQuality />
     </>
