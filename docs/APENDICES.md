@@ -126,7 +126,7 @@ Resumo, do mais próximo do negócio da Rivio ao mais distante:
 
 ### G. Modelo de negócio B2B2C pago por resultado
 
-- **Ideia:** o paciente não paga. Hospitais e operadoras oferecem o Elo aos seus pacientes e pagam pelo resultado, como a Rivio cobra dos hospitais: autorizações completas na primeira tentativa (A), exames repetidos evitados (B) e reinternações evitadas (C).
+- **Ideia:** o paciente paga a assinatura (Individual ou Família; o Gratuito tem limites). Além disso, hospitais e operadoras podem pagar pelo resultado, como a Rivio cobra dos hospitais: autorizações completas na primeira tentativa (A), exames repetidos evitados (B) e reinternações evitadas (C).
 - **Por que faz sentido:** o hospital ganha documentação melhor e menos glosa; a operadora ganha menos exame repetido e menos reinternação; o paciente ganha o histórico dele organizado.
 
 ### H. Resumo da internação em linguagem simples

@@ -13,7 +13,8 @@ import { ageFrom, formatDate } from "@/lib/dates";
 import { shareState } from "@/lib/share";
 import { asset } from "@/lib/paths";
 import { PERSONAS } from "@/lib/personas";
-import { CURRENT_PLAN, PLANS } from "@/lib/plans";
+import { PLANS } from "@/lib/plans";
+import { useSubscription } from "@/lib/subscription";
 import { setAiConsent, updatePrefs, useDb } from "@/lib/store";
 import type { Db, HealthAlert } from "@/lib/types";
 
@@ -76,7 +77,7 @@ export default function ConfiguracoesPage() {
           )}
 
           <SectionTitle>Plano</SectionTitle>
-          <LinkCard href="/planos" title={PLANS.find((p) => p.id === CURRENT_PLAN)!.name} text={`${PERSONAS.length} de ${PLANS.find((p) => p.id === CURRENT_PLAN)!.profiles} perfis neste aparelho. Veja os planos.`} />
+          <PlanCard />
 
           <AppsSection db={db} />
           <DevicesSection db={db} />
@@ -211,6 +212,20 @@ function Privacy({ db }: { db: Db }) {
       </p>
     </>
   );
+}
+
+/** Plano da conta, com a situação (ativo, pausado ou cancelado). */
+function PlanCard() {
+  const sub = useSubscription();
+  if (!sub) return null;
+  const plan = PLANS.find((p) => p.id === sub.plan)!;
+  const status =
+    sub.status === "pausado"
+      ? `Pausado até ${formatDate(sub.pausedUntil!)}`
+      : sub.status === "cancelado"
+        ? `Cancelado, ativo até ${formatDate(sub.renewsAt)}`
+        : `Ativo · ${PERSONAS.length} de ${plan.profiles} ${plan.profiles === 1 ? "perfil" : "perfis"}`;
+  return <LinkCard href="/planos" title={plan.name} text={`${status}. Pausar, cancelar ou mudar de plano.`} />;
 }
 
 function LinkCard({ href, title, text }: { href: string; title: string; text: string }) {

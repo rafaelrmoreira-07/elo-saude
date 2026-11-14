@@ -9,6 +9,8 @@ import { respondToFile, respondToText, runAction, type Say } from "@/lib/chatbot
 import { computeAlerts } from "@/lib/health";
 import { asset } from "@/lib/paths";
 import { useDb } from "@/lib/store";
+import { isPaused, useSubscription } from "@/lib/subscription";
+import { PausedNotice } from "@/components/PausedGate";
 
 /*
  * Conversa com o Elo, com a identidade do app: balão do paciente em
@@ -47,6 +49,9 @@ export function ChatPanel({ variant = "page", onClose }: { variant?: "sheet" | "
   const chat = useChat();
   const [typing, setTyping] = useState(false);
   const [draft, setDraft] = useState("");
+  const sub = useSubscription();
+  const paused = isPaused(sub);
+  const pausedUntil = sub?.pausedUntil;
   const [copied, setCopied] = useState<string | null>(null);
   const queue = useRef<Promise<unknown>>(Promise.resolve());
   const endRef = useRef<HTMLDivElement>(null);
@@ -106,6 +111,8 @@ export function ChatPanel({ variant = "page", onClose }: { variant?: "sheet" | "
   };
 
   async function onAction(a: ChatAction, m?: ChatMessage) {
+    // Plano pausado: botões das mensagens antigas que enviam algo ficam sem efeito
+    if (paused && (a.kind === "reply" || a.kind === "attach" || a.kind === "sample")) return;
     switch (a.kind) {
       case "reply":
         return sendText(a.label, a.text, true);
@@ -188,6 +195,12 @@ export function ChatPanel({ variant = "page", onClose }: { variant?: "sheet" | "
       </div>
 
       <div className={`border-t border-line bg-white ${sheet ? "pb-[max(0.75rem,env(safe-area-inset-bottom))]" : "pb-[max(0.75rem,env(safe-area-inset-bottom))]"}`}>
+        {paused ? (
+          <div className="px-4 pt-3">
+            <PausedNotice action="conversar com o Elo, enviar exames ou compartilhar" until={pausedUntil} compact />
+          </div>
+        ) : (
+        <>
         {/* Atalhos empilhados em grade (2 colunas), alvos de 44px e afastados do campo de escrever; somem enquanto a pessoa digita */}
         {!draft.trim() && (
           <div className="grid grid-cols-2 gap-2 px-4 pt-3" data-vaul-no-drag role="group" aria-label="Atalhos">
@@ -236,6 +249,8 @@ export function ChatPanel({ variant = "page", onClose }: { variant?: "sheet" | "
             <ArrowUpIcon width={22} />
           </button>
         </form>
+        </>
+        )}
       </div>
     </div>
   );

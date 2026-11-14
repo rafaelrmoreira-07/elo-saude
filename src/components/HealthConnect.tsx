@@ -6,6 +6,7 @@ import { formatDateTime } from "@/lib/dates";
 import { connectHealth, HealthSyncError, readHealthDays } from "@/lib/healthSync";
 import { appPlatform, healthHubName } from "@/lib/native";
 import { saveConnectedWearables, useDb } from "@/lib/store";
+import { isPaused, useSubscription } from "@/lib/subscription";
 import { HeartIcon } from "./icons";
 
 const subscribeNoop = () => () => {};
@@ -30,7 +31,8 @@ export function HealthConnectCard() {
   const platform = usePlatform();
   const db = useDb();
   const [busy, setBusy] = useState(false);
-  if (platform === "web" || !db) return null;
+  const paused = isPaused(useSubscription());
+  if (platform === "web" || !db || paused) return null;
 
   const hub = healthHubName(platform);
   const src = db.wearableSource;
@@ -77,7 +79,9 @@ export function HealthConnectCard() {
 export function AppHealthAutoSync() {
   const platform = usePlatform();
   const db = useDb();
-  const connected = platform !== "web" && db?.wearableSource?.connected === platform;
+  // Plano pausado: sem leitura nova até retomar
+  const paused = isPaused(useSubscription());
+  const connected = !paused && platform !== "web" && db?.wearableSource?.connected === platform;
   const last = db?.wearableSource?.importedAt;
   useEffect(() => {
     if (!connected) return;
