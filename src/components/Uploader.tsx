@@ -191,7 +191,7 @@ export function Uploader() {
             cancelLabel={multi ? "Pular este" : "Cancelar"}
             onCancel={() => (multi ? next(null) : reset())}
             onSaved={(docId) => next(docId)}
-            onRetry={item.extraction ? undefined : () => read(item.file, current, batch.current)}
+            onRetry={() => read(item.file, current, batch.current)}
           />
         )}
       </div>
@@ -274,6 +274,9 @@ interface Row {
 }
 
 /** Valor que a IA não conseguiu ler: precisa ser preenchido ou removido. */
+/** Texto salvo no lugar do valor quando nem a IA nem a pessoa conseguiram ler. */
+const NOT_READ = "não lido";
+
 const isMissing = (r: Row) => r.confidence != null && !r.value.trim() && !r.valueText;
 /** Valor lido com dúvida, ainda não conferido. */
 const needsCheck = (r: Row) => !r.checked && (isMissing(r) || r.confidence === "baixa" || r.confidence === "media");
@@ -365,7 +368,8 @@ function LabReview({
         name: r.name,
         analyteKey: r.analyteKey,
         value: numOrNull(r.value),
-        valueText: numOrNull(r.value) == null ? r.valueText ?? (r.value || null) : null,
+        // Valor que ninguém conseguiu ler: salva como "não lido"; o laudo original vai junto
+        valueText: numOrNull(r.value) == null ? r.valueText ?? (r.value.trim() || (isMissing(r) ? NOT_READ : null)) : null,
         unit: r.unit,
         refLow: numOrNull(r.refLow),
         refHigh: numOrNull(r.refHigh),
@@ -389,7 +393,13 @@ function LabReview({
             }),
           );
         }
-        toast.success(`${rows.length} resultados salvos`, { description: lab || undefined });
+        const notRead = rows.filter(isMissing).map((r) => r.name || "resultado sem nome");
+        if (notRead.length)
+          toast.warning(`${rows.length - notRead.length} resultados salvos, ${notRead.length} sem valor`, {
+            description: `Não foi possível ler: ${listNames(notRead)}. Abra o exame para digitar o valor quando tiver o laudo em mãos.`,
+            duration: 9000,
+          });
+        else toast.success(`${rows.length} resultados salvos`, { description: lab || undefined });
         onSaved(res.docId);
       }
     });
@@ -422,11 +432,30 @@ function LabReview({
       {ex?.patientName && <p className="mb-2 text-sm text-muted">Nome no laudo: {ex.patientName}</p>}
       {ex?.notes && <p className="mb-2 text-sm text-muted">Observação da IA: {ex.notes}</p>}
 
-      {toCheck > 0 && (
+      {missing > 0 && (
+        <div className="mb-3 flex gap-2.5 rounded-2xl bg-warn-soft p-4 text-[15px] leading-relaxed text-ink" role="alert">
+          <AlertIcon width={20} className="mt-0.5 shrink-0 text-warn" />
+          <div>
+            <p>
+              <strong className="font-medium">Não foi possível ler {missing === 1 ? "1 valor" : `${missing} valores`}:</strong>{" "}
+              {listNames(rows.filter(isMissing).map((r) => r.name || "resultado sem nome"))}.
+            </p>
+            <p className="mt-1">
+              Digite o valor olhando o laudo, ou tente ler de novo (uma foto mais nítida ajuda). Se não souber, pode salvar assim: o valor fica como &quot;não lido&quot;.
+            </p>
+            {onRetry && (
+              <button type="button" onClick={onRetry} className="btn-secondary mt-3 min-h-11 bg-white px-4 text-sm" disabled={pending}>
+                Tentar ler de novo
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+      {toCheck > missing && (
         <p className="mb-3 flex gap-2.5 rounded-2xl bg-warn-soft p-4 text-[15px] leading-relaxed text-ink" role="status">
           <AlertIcon width={20} className="mt-0.5 shrink-0 text-warn" />
           <span>
-            <strong className="font-medium">{toCheck === 1 ? "1 valor para conferir." : `${toCheck} valores para conferir.`}</strong>{" "}
+            <strong className="font-medium">{toCheck - missing === 1 ? "1 valor para conferir." : `${toCheck - missing} valores para conferir.`}</strong>{" "}
             A IA marcou o que não conseguiu ler com segurança, em vez de adivinhar. Compare com o original.
           </span>
         </p>
@@ -502,7 +531,7 @@ function LabReview({
                 <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-warn-line pt-2">
                   <p className="flex flex-1 items-center gap-1.5 text-[15px] font-medium text-warn">
                     <AlertIcon width={16} className="shrink-0" />
-                    {gone ? "Não consegui ler este valor. Confira no original e preencha, ou remova a linha." : "Confira este valor no original."}
+                    {gone ? "Não foi possível ler este valor. Digite olhando o laudo ou tente ler de novo. Se não souber, ele fica como \"não lido\"." : "Confira este valor no original."}
                   </p>
                   {!gone && (
                     <button type="button" onClick={() => update(r.id, { checked: true })} className="btn-secondary min-h-11 bg-white px-4 text-sm">
@@ -526,10 +555,15 @@ function LabReview({
       {error && <p className="mt-3 rounded-2xl bg-danger-soft p-3 text-[15px] text-danger" role="alert">{error}</p>}
       <div className="sticky bottom-[calc(5rem+env(safe-area-inset-bottom))] mt-4 flex gap-2 bg-white/95 py-3 backdrop-blur">
         <button type="button" className="btn-secondary flex-1" onClick={onCancel} disabled={pending}>{cancelLabel}</button>
-        <button type="button" className="btn-primary flex-[2]" onClick={submit} disabled={pending || !rows.length || !date || missing > 0}>
-          {pending ? "Salvando…" : missing > 0 ? `Preencha ou remova ${missing === 1 ? "1 valor" : `${missing} valores`}` : `Salvar ${rows.length} resultados`}
+        <button type="button" className="btn-primary flex-[2]" onClick={submit} disabled={pending || !rows.length || !date}>
+          {pending ? "Salvando…" : missing > 0 ? `Salvar (${missing} ${missing === 1 ? "não lido" : "não lidos"})` : `Salvar ${rows.length} resultados`}
         </button>
       </div>
+      {missing > 0 && !pending && (
+        <p className="-mt-1 text-sm text-muted">
+          {missing === 1 ? "1 valor vai" : `${missing} valores vão`} como &quot;não lido&quot;. Você pode corrigir depois, e o médico vê o laudo original.
+        </p>
+      )}
     </div>
   );
 }
