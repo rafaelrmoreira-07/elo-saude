@@ -217,7 +217,8 @@ summary::-webkit-details-marker {
   align-items: center;
   justify-content: center;
   border-radius: 11px;
-  padding: 4px 12px;
+  padding: 4px 8px;
+  white-space: nowrap;
   font-size: 15px;
   font-weight: 500;
   color: var(--color-muted);
