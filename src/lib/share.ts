@@ -1,4 +1,5 @@
 import { computeAlerts } from "./health";
+import { inPeriod, medInPeriod, type Period } from "./period";
 import type { Admission, CheckIn, Db, DescriptiveReport, DoctorSummary, Encounter, Medication, Patient, Scope, Share, ShareKind, Vaccine, WearableDay } from "./types";
 
 export type ShareState = "ativo" | "expirado" | "revogado";
@@ -16,8 +17,20 @@ type DataPart = Pick<Db, "patient" | "documents" | "labResults" | "encounters" |
  * consentimento. `onlyDocIds` limita os exames aos laudos escolhidos na pasta
  * de internação: o hospital não precisa ver o histórico inteiro.
  */
-export function scopedData(db: DataPart, scopes: Scope[], opts: { onlyDocIds?: string[] } = {}) {
+export function scopedData(db: DataPart, scopes: Scope[], opts: { onlyDocIds?: string[]; period?: Period } = {}) {
   const has = (s: Scope) => scopes.includes(s);
+  const pe = opts.period;
+  if (pe && (pe.from || pe.to)) {
+    db = {
+      ...db,
+      documents: db.documents.filter((d) => inPeriod(d.examDate, pe)),
+      labResults: db.labResults.filter((r) => inPeriod(r.date, pe)),
+      encounters: db.encounters.filter((e) => inPeriod(e.date, pe)),
+      vaccines: db.vaccines.filter((v) => inPeriod(v.date, pe)),
+      medications: db.medications.filter((m) => medInPeriod(m, pe)),
+      wearableDays: db.wearableDays.filter((d) => inPeriod(d.date, pe)),
+    };
+  }
   if (opts.onlyDocIds) {
     const keep = new Set(opts.onlyDocIds);
     db = { ...db, documents: db.documents.filter((d) => keep.has(d.id)), labResults: db.labResults.filter((r) => r.documentId && keep.has(r.documentId)) };
@@ -47,7 +60,7 @@ export type ScopedData = ReturnType<typeof scopedData>;
 /** Recorte de um compartilhamento: hospital vê só os laudos da pasta. */
 export function dataForShare(db: DataPart & Pick<Db, "admissions">, share: Share): ScopedData {
   const ad = share.kind === "hospital" ? db.admissions?.find((a) => a.id === share.admissionId) : undefined;
-  return scopedData(db, share.scopes, ad ? { onlyDocIds: ad.supportDocIds } : {});
+  return scopedData(db, share.scopes, { ...(ad ? { onlyDocIds: ad.supportDocIds } : {}), period: share.period });
 }
 
 export type SharedExtras = { admission?: Admission; checkins?: CheckIn[] };
@@ -61,7 +74,7 @@ export type SharedExtras = { admission?: Admission; checkins?: CheckIn[] };
 
 interface Snapshot {
   v: 1;
-  sh: { t: string; n: string; c?: string; sc: Scope[]; ca: string; ea: string; k?: ShareKind; ev?: boolean; ai?: string; rs?: number };
+  sh: { t: string; n: string; c?: string; sc: Scope[]; ca: string; ea: string; k?: ShareKind; ev?: boolean; ai?: string; rs?: number; pe?: Period };
   /** Pasta de internação (sem o arquivo do pedido, que fica no aparelho). */
   ad?: Admission;
   ci?: Omit<CheckIn, "id" | "admissionId">[];
@@ -107,7 +120,7 @@ function toSnapshot(share: Share, data: ScopedData, summary?: DoctorSummary, ext
   };
   return {
     v: 1,
-    sh: { t: share.token, n: share.doctorName, c: share.doctorCrm, sc: share.scopes, ca: share.createdAt, ea: share.expiresAt, k: share.kind, ev: share.evidenceConsent, ai: share.admissionId, rs: share.recentShown },
+    sh: { t: share.token, n: share.doctorName, c: share.doctorCrm, sc: share.scopes, ca: share.createdAt, ea: share.expiresAt, k: share.kind, ev: share.evidenceConsent, ai: share.admissionId, rs: share.recentShown, pe: share.period },
     ad: extras.admission ? { ...extras.admission, order: extras.admission.order ? { name: extras.admission.order.name, mimeType: extras.admission.order.mimeType } : undefined } : undefined,
     ci: extras.checkins?.map((c) => ({ at: c.at, symptoms: c.symptoms, tookMeds: c.tookMeds })),
     p: data.patient,
@@ -181,6 +194,7 @@ function fromSnapshot(s: Snapshot): { share: Share; data: ScopedData; summary?: 
     evidenceConsent: s.sh.ev,
     admissionId: s.sh.ai,
     recentShown: s.sh.rs,
+    period: s.sh.pe,
   };
   const data = scopedData(
     {

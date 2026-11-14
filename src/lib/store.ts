@@ -4,6 +4,7 @@ import { useSyncExternalStore } from "react";
 import { analyteInfo, resolveAnalyteKey } from "./analytes";
 import { resetChat } from "./chat";
 import { addDays, isValidISODate, todayISO } from "./dates";
+import { cleanPeriod } from "./period";
 import { createPersonaDb, personaWearables } from "./personas";
 import { extendWearablesToToday } from "./seed";
 import { simulatedDischarge } from "./admission";
@@ -334,6 +335,7 @@ export function createShare(form: {
   kind?: ShareKind;
   admissionId?: string;
   evidenceConsent?: boolean;
+  period?: { from?: string; to?: string };
 }): { error: string } | { token: string } {
   const doctorName = clean(form.doctorName, 100);
   const doctorCrm = clean(form.doctorCrm, 30) || undefined;
@@ -361,6 +363,7 @@ export function createShare(form: {
       admissionId: form.admissionId,
       evidenceConsent: form.kind === "hospital" ? Boolean(form.evidenceConsent) : undefined,
       recentShown,
+      period: cleanPeriod(form.period),
     });
   });
   return { token };

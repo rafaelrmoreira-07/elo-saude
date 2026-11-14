@@ -15,7 +15,8 @@ import {
   BarChart,
 } from "recharts";
 import type { WearableDay } from "@/lib/types";
-import { SlidingTabs } from "./SlidingTabs";
+import { inPeriod, type Period } from "@/lib/period";
+import { PeriodPicker } from "./PeriodPicker";
 
 const ts = (iso: string) => new Date(iso + "T12:00:00Z").getTime();
 const yearFmt = (t: number) => new Date(t).getUTCFullYear().toString();
@@ -187,8 +188,9 @@ export function WearableChart({
   defaultRange?: 30 | 90;
   height?: number;
 }) {
-  const [range, setRange] = useState<14 | 30 | 90>(defaultRange);
-  const data = days.slice(-range).map((d) => ({ ...d, t: ts(d.date) }));
+  const [range, setRange] = useState<Period | number>(defaultRange);
+  const shown = typeof range === "number" ? days.slice(-range) : days.filter((d) => inPeriod(d.date, range));
+  const data = shown.map((d) => ({ ...d, t: ts(d.date) }));
   const Chart = kind === "bar" ? BarChart : LineChart;
 
   return (
@@ -205,14 +207,17 @@ export function WearableChart({
           </ul>
         )}
         <div>
-          <SlidingTabs
+          <PeriodPicker
             label="Período"
-            active={String(range)}
-            onChange={(k) => setRange(Number(k) as 14 | 30 | 90)}
-            items={[14, 30, 90].map((r) => ({ key: String(r), label: `${r} dias` }))}
+            initial={String(defaultRange)}
+            presets={[...[14, 30, 90].map((r) => ({ key: String(r), label: `${r} dias` })), { key: "personalizado", label: "Escolher" }]}
+            resolve={() => ({})}
+            min={days[0]?.date}
+            onChange={(p, k) => setRange(k === "personalizado" ? p : Number(k))}
           />
         </div>
       </div>
+      {!data.length && <p className="py-8 text-center text-[15px] text-muted">Sem medições neste período.</p>}
       <div style={{ height }}>
         <ResponsiveContainer width="100%" height="100%">
           <Chart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -18 }}>

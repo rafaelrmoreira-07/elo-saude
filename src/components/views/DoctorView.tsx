@@ -1,6 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
+import { periodLabel } from "@/lib/period";
 import { useEffect, useRef, useState } from "react";
 import { CHART, LabTrendChart, WearableChart } from "@/components/charts";
 import { DoctorSummary } from "@/components/DoctorSummary";
@@ -173,6 +174,7 @@ function Dashboard({
           <p>
             Acesso autorizado pelo paciente para <strong>{share.doctorName}</strong> até {formatDateTime(share.expiresAt)}.
             Escopo: {share.scopes.map((s) => SCOPE_LABELS[s].toLowerCase()).join(", ")}.
+            {share.period && <> Período dos dados: <strong>{periodLabel(share.period).toLowerCase()}</strong>.</>}
             {fromLink ? " Cópia enviada pelo paciente por link." : " Este acesso fica registrado."}
           </p>
         </div>

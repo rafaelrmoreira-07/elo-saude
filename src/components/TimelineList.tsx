@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { inPeriod, type Period } from "@/lib/period";
 import type { TimelineEvent, TimelineKind } from "@/lib/timeline";
+import { PeriodPicker } from "./PeriodPicker";
 import { AlertIcon, ChevronRight, LabIcon, PillIcon, StethoscopeIcon, SyringeIcon } from "./icons";
 
 const KINDS: { key: TimelineKind; label: string; icon: React.ComponentType<{ width?: number }>; dot: string }[] = [
@@ -24,8 +26,11 @@ const TONE = {
 const day = (iso: string) => new Date(iso + "T12:00:00Z").toLocaleDateString("pt-BR", { day: "2-digit", timeZone: "UTC" });
 const month = (iso: string) => new Date(iso + "T12:00:00Z").toLocaleDateString("pt-BR", { month: "short", timeZone: "UTC" }).replace(".", "");
 
-export function TimelineList({ events }: { events: TimelineEvent[] }) {
+export function TimelineList({ events: all }: { events: TimelineEvent[] }) {
   const [hidden, setHidden] = useState<Set<TimelineKind>>(new Set());
+  const [period, setPeriod] = useState<Period>({});
+  const events = all.filter((e) => inPeriod(e.date, period));
+  const oldest = all.reduce((m, e) => (e.date < m ? e.date : m), all[0]?.date ?? "");
   const visible = events.filter((e) => !hidden.has(e.kind));
   const toggle = (k: TimelineKind) =>
     setHidden((prev) => {
@@ -44,6 +49,9 @@ export function TimelineList({ events }: { events: TimelineEvent[] }) {
 
   return (
     <div>
+      <div className="mb-3">
+        <PeriodPicker label="Período da linha do tempo" onChange={(p) => setPeriod(p)} min={oldest.slice(0, 10) || undefined} />
+      </div>
       <div className="mb-2 flex flex-wrap gap-2" role="group" aria-label="Mostrar na linha do tempo">
         {KINDS.map(({ key, label }) => {
           const on = !hidden.has(key);
@@ -103,7 +111,9 @@ export function TimelineList({ events }: { events: TimelineEvent[] }) {
           </ol>
         </section>
       ))}
-      {!visible.length && <p className="mt-6 text-[15px] text-muted">Nada para mostrar. Ligue algum filtro acima.</p>}
+      {!visible.length && (
+        <p className="mt-6 text-[15px] text-muted">{events.length ? "Nada para mostrar. Ligue algum filtro acima." : "Nada registrado neste período. Escolha outras datas."}</p>
+      )}
     </div>
   );
 }

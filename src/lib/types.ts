@@ -193,6 +193,8 @@ export interface Share {
   evidenceConsent?: boolean;
   /** Quantos resultados dos últimos 90 dias foram no relatório (apêndice B). */
   recentShown?: number;
+  /** Período dos dados que o médico pode ver (ausente = todo o histórico). */
+  period?: { from?: string; to?: string };
 }
 
 /** Arquivo guardado no IndexedDB (ex.: foto do pedido médico). */

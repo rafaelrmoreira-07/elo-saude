@@ -12,6 +12,8 @@ import { SCOPE_LABELS, SCOPES, type Scope } from "@/lib/types";
 import { Checkbox } from "./base/checkbox";
 import { CopyIcon, ShieldIcon, WhatsappIcon } from "./icons";
 import { SlidingTabs } from "./SlidingTabs";
+import { PeriodPicker } from "./PeriodPicker";
+import { periodLabel, type Period } from "@/lib/period";
 
 const DURATIONS = [
   { hours: 1, label: "1 hora" },
@@ -32,6 +34,8 @@ export function ShareForm() {
   const [crm, setCrm] = useState("");
   const [scopes, setScopes] = useState<Scope[]>([...SCOPES]);
   const [hours, setHours] = useState(24);
+  const [period, setPeriod] = useState<Period>({});
+  const oldest = useDb()?.labResults.reduce((m, r) => (r.date < m ? r.date : m), "9999") ?? undefined;
 
   if (token) return <ShareResult key={token} token={token} onDone={() => setToken(null)} />;
 
@@ -42,7 +46,7 @@ export function ShareForm() {
       className="space-y-6"
       onSubmit={(e) => {
         e.preventDefault();
-        const res = createShare({ doctorName: name, doctorCrm: crm, scopes, hours });
+        const res = createShare({ doctorName: name, doctorCrm: crm, scopes, hours, period });
         if ("error" in res) setError(res.error);
         else {
           setError(null);
@@ -74,6 +78,12 @@ export function ShareForm() {
       </fieldset>
 
       <div>
+        <p className="label">De qual período</p>
+        <PeriodPicker label="De qual período" onChange={(p) => setPeriod(p)} min={oldest && oldest !== "9999" ? oldest : undefined} />
+        <p className="mt-2 text-sm text-muted">{periodLabel(period)}. O médico só vê exames, consultas, vacinas, remédios e medições desse intervalo.</p>
+      </div>
+
+      <div>
         <p className="label" id="prazo">Por quanto tempo</p>
         <SlidingTabs label="Por quanto tempo" active={String(hours)} onChange={(k) => setHours(Number(k))} items={DURATIONS.map((d) => ({ key: String(d.hours), label: d.label }))} />
       </div>
@@ -81,7 +91,7 @@ export function ShareForm() {
       <p className="flex gap-3 rounded-2xl bg-navy-50 p-4 text-sm leading-relaxed text-ink-soft">
         <ShieldIcon width={20} className="mt-0.5 shrink-0 text-ink" />
         <span>
-          Você autoriza este médico a ver os dados marcados até o fim do prazo, para cuidar da sua saúde (LGPD, art. 11). Dá para revogar quando quiser, e cada acesso fica registrado.
+          Você autoriza este médico a ver os dados marcados, do período escolhido, até o fim do prazo, para cuidar da sua saúde (LGPD, art. 11). Dá para revogar quando quiser, e cada acesso fica registrado.
         </span>
       </p>
 
