@@ -121,12 +121,44 @@ export interface WearableDay {
 
 export type WearableMetric = Exclude<keyof WearableDay, "date">;
 
+/** Aparelho físico que mede (relógio, anel, medidor...). "importado" só existe em bancos antigos. */
+export type DeviceKind = "relogio" | "anel" | "medidor_pressao" | "oximetro" | "balanca" | "celular" | "outro" | "importado";
+
 export interface WearableDevice {
   id: string;
   name: string;
-  kind: "relogio" | "anel" | "medidor_pressao" | "importado";
+  kind: DeviceKind;
   metrics: string[];
   connectedAt: string;
+  /** App por onde chegam os dados deste aparelho (id em Db.apps). */
+  appId?: string;
+  /** true = encontrado nos dados da central de saúde ou do arquivo; false/ausente = cadastrado pela pessoa. */
+  detected?: boolean;
+}
+
+/**
+ * App de saúde que entrega dados ao Elo. Separado dos aparelhos: o app é por
+ * onde os dados chegam (e o que a pessoa autoriza ou desconecta); o aparelho é
+ * o que mede.
+ * - central: Apple Saúde ou Health Connect, as centrais do celular.
+ * - fabricante: app de relógio, anel, medidor ou balança (Samsung Health, Garmin, Oura...).
+ * - ia: app de saúde com IA, que gera relatórios.
+ */
+export interface HealthApp {
+  id: string;
+  name: string;
+  kind: "central" | "fabricante" | "ia" | "outro";
+  /** conexao = o app do Elo lê sozinho; arquivo = a pessoa importa o que o app exporta. */
+  via: "conexao" | "arquivo";
+  /** Quando os dados chegam por uma central (ex.: Samsung Health pelo Health Connect): id da central. */
+  through?: string;
+  /** Plataforma da conexão direta (só centrais, dentro do app). */
+  platform?: "ios" | "android";
+  metrics: string[];
+  connectedAt: string;
+  lastSyncAt?: string;
+  filename?: string;
+  readBy?: "direto" | "ia";
 }
 
 /** De onde vêm os dados dos wearables desta pessoa. */
@@ -276,6 +308,14 @@ export interface Db {
   vaccines: Vaccine[];
   wearableDays: WearableDay[];
   devices: WearableDevice[];
+  /** Apps conectados (separados dos aparelhos). Ausente em bancos antigos: a migração cria. */
+  apps?: HealthApp[];
+  /**
+   * Dias de cada app, para desconectar um app e apagar só o que veio dele.
+   * Ausente = wearableDays é a fonte (personas e bancos antigos). A tela usa
+   * sempre wearableDays, que é a junção destes.
+   */
+  appDays?: Record<string, WearableDay[]>;
   shares: Share[];
   /** Campos opcionais: bancos salvos antes destes apêndices continuam válidos. */
   admissions?: Admission[];

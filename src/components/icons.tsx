@@ -45,6 +45,9 @@ import {
   ChartBarIcon as PhChart,
   CircleNotchIcon as PhRing,
   XIcon as PhX,
+  DeviceMobileIcon as PhDeviceMobile,
+  AppWindowIcon as PhAppWindow,
+  SparkleIcon as PhSparkle,
 } from "@phosphor-icons/react/ssr";
 import type { Icon as PhIcon, IconWeight } from "@phosphor-icons/react/lib";
 
@@ -92,6 +95,9 @@ export const WatchIcon = wrap(PhWatch);
 export const InsightIcon = wrap(PhIntersect);
 export const WhatsappIcon = wrap(PhWhatsapp);
 export const RingIcon = wrap(PhRing);
+export const MobileIcon = wrap(PhDeviceMobile);
+export const AppIcon = wrap(PhAppWindow);
+export const SparkleIcon = wrap(PhSparkle);
 export const BedIcon = wrap(PhBed);
 export const DownloadIcon = wrap(PhDownload);
 export const UploadIcon = wrap(PhUpload);

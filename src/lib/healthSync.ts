@@ -10,6 +10,7 @@
  * - Variabilidade: o iPhone mede SDNN e o Android, RMSSD (cálculos diferentes).
  */
 import type { HealthDataType, HealthSample } from "@capgo/capacitor-health";
+import { classifySources, type Detected, type SourceSeen } from "./healthApps";
 import { appPlatform, healthHubName } from "./native";
 import type { WearableDay } from "./types";
 
@@ -59,8 +60,11 @@ const dayOf = (iso: string) => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 };
 
-/** Lê os últimos dias e devolve um registro por dia (só os dias com alguma medição). */
-export async function readHealthDays(days = SYNC_DAYS): Promise<WearableDay[]> {
+/**
+ * Lê os últimos dias e devolve um registro por dia (só os dias com alguma
+ * medição), mais os apps e aparelhos que gravaram esses dados na central.
+ */
+export async function readHealthDays(days = SYNC_DAYS): Promise<{ days: WearableDay[]; found: Detected }> {
   const Health = await plugin();
   const end = new Date();
   const start = new Date(end);
@@ -102,6 +106,23 @@ export async function readHealthDays(days = SYNC_DAYS): Promise<WearableDay[]> {
   }
 
   const [rhr, hrv, spo2, bp, sleep] = await Promise.all([read("restingHeartRate"), read("heartRateVariability"), read("oxygenSaturation"), read("bloodPressure"), read("sleep")]);
+
+  // Quem gravou cada dado (app e, quando a central informa, o aparelho)
+  const sources = new Map<string, SourceSeen>();
+  const seen = (samples: HealthSample[], metric: string) => {
+    for (const s of samples) {
+      if (!s.sourceName && !s.sourceId) continue;
+      const key = `${s.sourceId ?? ""}|${s.sourceName ?? ""}|${s.deviceType ?? ""}`;
+      const cur = sources.get(key) ?? { name: s.sourceName ?? s.sourceId ?? "", id: s.sourceId, deviceType: s.deviceType, metrics: new Set<string>() };
+      cur.metrics.add(metric);
+      sources.set(key, cur);
+    }
+  };
+  seen(rhr, "Batimentos em repouso");
+  seen(hrv, "Variabilidade cardíaca");
+  seen(spo2, "Saturação");
+  seen(bp, "Pressão arterial");
+  seen(sleep, "Sono");
   avgInto(rhr, "restingHr");
   avgInto(hrv, "hrvMs");
 
@@ -139,5 +160,6 @@ export async function readHealthDays(days = SYNC_DAYS): Promise<WearableDay[]> {
   }
   for (const [k, m] of asleep) day(k).sleepHours = Math.round((m / 60) * 10) / 10;
 
-  return [...byDay.values()].sort((a, b) => a.date.localeCompare(b.date));
+  const platform = appPlatform() === "android" ? "android" : "ios";
+  return { days: [...byDay.values()].sort((a, b) => a.date.localeCompare(b.date)), found: classifySources([...sources.values()], platform) };
 }

@@ -8,7 +8,8 @@ import { cleanPeriod } from "./period";
 import { createPersonaDb, personaWearables } from "./personas";
 import { extendWearablesToToday } from "./seed";
 import { simulatedDischarge } from "./admission";
-import { SCOPES, type Admission, type CheckInSymptom, type Db, type DescriptiveReport, type DoctorSummary, type ExtractedResult, type ExtractionSource, type PersonaId, type Scope, type ShareKind, type WearableDay } from "./types";
+import { appRef, CENTRAL_ID, mergeAppDays, personaConnections, type Detected } from "./healthApps";
+import { SCOPES, type Admission, type CheckInSymptom, type Db, type DescriptiveReport, type DoctorSummary, type ExtractedResult, type ExtractionSource, type PersonaId, type Scope, type ShareKind, type DeviceKind, type HealthApp, type WearableDay, type WearableDevice } from "./types";
 import { MAX_IMPORT_DAYS, METRIC_LABELS, type ImportResult } from "./wearableImport";
 
 /**
@@ -39,10 +40,13 @@ function read(): Db {
   }
   if (!db || db.version !== 1) {
     db = createPersonaDb("nova"); // primeiro acesso: app vazio, com o guia de boas-vindas
+    ensureConnections(db);
     write(db);
-  } else if (db.wearableSource?.kind !== "importado" && extendWearablesToToday(db, new Date(), personaWearables(db.personaId))) {
+  } else {
+    let changed = ensureConnections(db); // bancos de antes da separação entre apps e aparelhos
     // Só a simulação é estendida até hoje; dado importado fica como veio do arquivo.
-    write(db);
+    if (db.wearableSource?.kind !== "importado" && extendWearablesToToday(db, new Date(), personaWearables(db.personaId))) changed = true;
+    if (changed) write(db);
   }
   return db;
 }
@@ -232,34 +236,113 @@ export async function saveExam(input: SaveExamInput): Promise<{ error: string } 
  * substitui a simulação; as seguintes se juntam às anteriores (o dia mais novo
  * vale), mantendo os últimos 180 dias.
  */
-export function importWearables(res: ImportResult) {
-  update((db) => {
-    const merged = new Map<string, WearableDay>();
-    if (db.wearableSource?.kind === "importado") for (const d of db.wearableDays) merged.set(d.date, d);
-    for (const d of res.days) merged.set(d.date, d);
-    const days = [...merged.values()].sort((a, b) => a.date.localeCompare(b.date));
-    const last = days.at(-1)!.date;
-    const cutoff = addDays(last, -(MAX_IMPORT_DAYS - 1));
-    db.wearableDays = days.filter((d) => d.date >= cutoff);
-    db.wearableSource = { kind: "importado", label: res.source.label, filename: res.source.filename, readBy: res.source.readBy, importedAt: new Date().toISOString() };
-    db.devices = [
+// ---------- apps e aparelhos conectados ----------
+
+const nowIso = () => new Date().toISOString();
+
+/**
+ * Cria a lista de apps em bancos antigos e nas personas: o "aparelho" que na
+ * verdade era o app de origem vira app, e cada aparelho fica ligado a um app.
+ * Devolve true se mudou algo.
+ */
+function ensureConnections(db: Db): boolean {
+  if (db.apps) return false;
+  const src = db.wearableSource;
+  if (src?.kind === "importado") {
+    const legacy = db.devices.find((d) => d.kind === "importado");
+    const ref = src.connected ? { id: CENTRAL_ID[src.connected], name: src.connected === "ios" ? "Apple Saúde" : "Health Connect", kind: "central" as const } : appRef(src.label ?? "Arquivo importado");
+    const at = src.importedAt ?? legacy?.connectedAt ?? nowIso();
+    db.apps = [
       {
-        id: "dev-importado",
-        name: res.source.label,
-        kind: "importado",
-        metrics: res.metrics.map((k) => METRIC_LABELS[k].name),
-        connectedAt: new Date().toISOString(),
+        ...ref,
+        via: src.connected ? "conexao" : "arquivo",
+        platform: src.connected,
+        metrics: legacy?.metrics ?? [],
+        connectedAt: legacy?.connectedAt ?? at,
+        lastSyncAt: at,
+        filename: src.filename,
+        readBy: src.readBy,
       },
     ];
+    db.devices = db.devices.filter((d) => d.kind !== "importado");
+    db.appDays = { [ref.id]: db.wearableDays };
+    return true;
+  }
+  const pc = personaConnections(db.personaId, db.devices[0]?.connectedAt ?? db.createdAt);
+  db.apps = db.wearableDays.length ? pc.apps : [];
+  db.devices = db.devices.map((d) => ({ ...d, ...pc.devices[d.id] }));
+  return true;
+}
+
+/** Passa a guardar os dias por app (para poder apagar só os de um app). Os dias atuais ficam com o app principal. */
+function ensureAppDays(db: Db): Record<string, WearableDay[]> {
+  if (!db.appDays) {
+    const owner = db.apps?.find((a) => !a.through)?.id ?? "anterior";
+    db.appDays = db.wearableDays.length ? { [owner]: db.wearableDays } : {};
+  }
+  return db.appDays;
+}
+
+function rebuildDays(db: Db) {
+  const all = mergeAppDays(db.apps ?? [], ensureAppDays(db));
+  if (!all.length) {
+    db.wearableDays = [];
+    return;
+  }
+  const cutoff = addDays(all.at(-1)!.date, -(MAX_IMPORT_DAYS - 1));
+  db.wearableDays = all.filter((d) => d.date >= cutoff);
+}
+
+function upsertApp(db: Db, app: HealthApp) {
+  const apps = (db.apps ??= []);
+  const i = apps.findIndex((a) => a.id === app.id);
+  if (i < 0) apps.push(app);
+  else apps[i] = { ...apps[i], ...app, connectedAt: apps[i].connectedAt, metrics: [...new Set([...apps[i].metrics, ...app.metrics])] };
+}
+
+/** Aparelhos encontrados nos dados entram ligados ao app; os cadastrados pela pessoa ficam como estão. */
+function upsertDetected(db: Db, found: Detected, through: string | null) {
+  const at = nowIso();
+  for (const a of found.apps) {
+    if (a.id === through) continue;
+    upsertApp(db, { ...a, via: through ? db.apps?.find((x) => x.id === through)?.via ?? "arquivo" : "arquivo", through: through ?? undefined, connectedAt: at, lastSyncAt: at });
+  }
+  for (const d of found.devices) {
+    const cur = db.devices.find((x) => x.id === d.id);
+    if (cur) Object.assign(cur, { appId: cur.appId ?? d.appId, metrics: [...new Set([...cur.metrics, ...d.metrics])] });
+    else db.devices.push({ ...d, connectedAt: at, detected: true });
+  }
+}
+
+function mergeInto(prev: WearableDay[] | undefined, next: WearableDay[]): WearableDay[] {
+  const m = new Map((prev ?? []).map((d) => [d.date, d]));
+  for (const d of next) m.set(d.date, d);
+  return [...m.values()].sort((a, b) => a.date.localeCompare(b.date));
+}
+
+/**
+ * Salva um arquivo importado como dados de um app (o que a pessoa escolheu na
+ * revisão: Samsung Health, um app de saúde com IA etc.).
+ */
+export function importWearables(res: ImportResult, app: Pick<HealthApp, "id" | "name" | "kind">, found?: Detected) {
+  update((db) => {
+    const at = nowIso();
+    const days = ensureAppDays(db);
+    days[app.id] = mergeInto(days[app.id], res.days);
+    upsertApp(db, { ...app, via: "arquivo", metrics: res.metrics.map((k) => METRIC_LABELS[k].name), connectedAt: at, lastSyncAt: at, filename: res.source.filename, readBy: res.source.readBy });
+    if (found) upsertDetected(db, found, app.id);
+    rebuildDays(db);
+    db.wearableSource = { kind: "importado", label: app.name, filename: res.source.filename, readBy: res.source.readBy, importedAt: at };
   });
 }
 
 /**
  * App de iPhone e Android: salva os dias lidos do Apple Saúde ou do Health
- * Connect. Junta com o que já havia (o dia mais novo vale), como a importação.
+ * Connect, e os apps e aparelhos que gravaram esses dados.
  */
-export function saveConnectedWearables(days: WearableDay[], platform: "ios" | "android"): number {
+export function saveConnectedWearables(days: WearableDay[], platform: "ios" | "android", found?: Detected): number {
   if (!days.length) return 0;
+  const id = CENTRAL_ID[platform];
   const label = platform === "ios" ? "Apple Saúde" : "Health Connect";
   const has = (k: keyof WearableDay) => days.some((d) => d[k] != null);
   const metrics = [
@@ -271,16 +354,58 @@ export function saveConnectedWearables(days: WearableDay[], platform: "ios" | "a
     has("systolic") && "Pressão arterial",
   ].filter((x): x is string => Boolean(x));
   update((db) => {
-    const merged = new Map<string, WearableDay>();
-    if (db.wearableSource?.kind === "importado") for (const d of db.wearableDays) merged.set(d.date, d);
-    for (const d of days) merged.set(d.date, d);
-    const all = [...merged.values()].sort((a, b) => a.date.localeCompare(b.date));
-    const cutoff = addDays(all.at(-1)!.date, -(MAX_IMPORT_DAYS - 1));
-    db.wearableDays = all.filter((d) => d.date >= cutoff);
-    db.wearableSource = { kind: "importado", label, readBy: "direto", connected: platform, importedAt: new Date().toISOString() };
-    db.devices = [{ id: "dev-conectado", name: label, kind: "importado", metrics, connectedAt: new Date().toISOString() }];
+    const at = nowIso();
+    const byApp = ensureAppDays(db);
+    byApp[id] = mergeInto(byApp[id], days);
+    upsertApp(db, { id, name: label, kind: "central", via: "conexao", platform, metrics, connectedAt: at, lastSyncAt: at });
+    if (found) upsertDetected(db, found, id);
+    rebuildDays(db);
+    db.wearableSource = { kind: "importado", label, readBy: "direto", connected: platform, importedAt: at };
   });
   return days.length;
+}
+
+/**
+ * Desconecta um app (e os que chegam por ele). Os aparelhos encontrados nos
+ * dados dele saem junto; os cadastrados pela pessoa ficam, sem app.
+ * Com deleteData, apaga também os dias que vieram dele.
+ */
+export function disconnectApp(id: string, deleteData: boolean) {
+  update((db) => {
+    const gone = new Set([id, ...(db.apps ?? []).filter((a) => a.through === id).map((a) => a.id)]);
+    if (deleteData) {
+      const byApp = ensureAppDays(db);
+      for (const g of gone) delete byApp[g];
+    }
+    db.apps = (db.apps ?? []).filter((a) => !gone.has(a.id));
+    db.devices = db.devices.filter((d) => !(d.detected && d.appId && gone.has(d.appId))).map((d) => (d.appId && gone.has(d.appId) ? { ...d, appId: undefined } : d));
+    if (deleteData) rebuildDays(db);
+    const src = db.wearableSource;
+    if (src?.connected && CENTRAL_ID[src.connected] === id) db.wearableSource = { ...src, connected: undefined };
+    if (deleteData && !db.wearableDays.length) db.wearableSource = { kind: "importado", label: "Nenhum app" };
+  });
+}
+
+/** Cadastra um aparelho à mão e diz por qual app os dados dele chegam. */
+export function addDevice(input: { name: string; kind: DeviceKind; appId?: string }): WearableDevice {
+  const dev: WearableDevice = { id: `dev-${crypto.randomUUID().slice(0, 8)}`, name: input.name.trim(), kind: input.kind, appId: input.appId || undefined, metrics: [], connectedAt: nowIso(), detected: false };
+  update((db) => {
+    db.devices.push(dev);
+  });
+  return dev;
+}
+
+export function updateDevice(id: string, patch: Partial<Pick<WearableDevice, "name" | "kind" | "appId">>) {
+  update((db) => {
+    const d = db.devices.find((x) => x.id === id);
+    if (d) Object.assign(d, patch);
+  });
+}
+
+export function removeDevice(id: string) {
+  update((db) => {
+    db.devices = db.devices.filter((d) => d.id !== id);
+  });
 }
 
 /** Completa à mão um valor que ficou "não lido" na leitura do laudo. */
@@ -331,6 +456,7 @@ export async function resetDemo(persona?: PersonaId) {
     const id = persona ?? db.personaId ?? "carlos";
     for (const k of Object.keys(db)) delete (db as unknown as Record<string, unknown>)[k];
     Object.assign(db, createPersonaDb(id));
+    ensureConnections(db);
   });
   resetChat();
   try {

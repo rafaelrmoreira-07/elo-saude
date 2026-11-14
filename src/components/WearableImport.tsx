@@ -6,9 +6,11 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/dates";
 import { fmt } from "@/lib/health";
+import { appRef, catalogApp, classifySources } from "@/lib/healthApps";
 import { getDbSnapshot, importWearables } from "@/lib/store";
 import { ImportError, importWearableFile, METRIC_LABELS, sampleAndroidCsv, sampleAppleExport, summarize, type ImportResult } from "@/lib/wearableImport";
 import { AlertIcon, CheckIcon, FileIcon, ShieldIcon, WatchIcon } from "./icons";
+import { AppPicker, resolvePick, type AppPick } from "./Connections";
 import { SlidingTabs } from "./SlidingTabs";
 import { SectionTitle } from "./ui";
 
@@ -48,14 +50,14 @@ export function WearableImport({ onBack }: { onBack: () => void }) {
     }
   }
 
-  function save(result: ImportResult) {
-    importWearables(result);
-    toast.success(`${result.days.length} dias de dados do relógio salvos`, { description: result.source.label });
+  function save(result: ImportResult, app: { id: string; name: string; kind: "central" | "fabricante" | "ia" | "outro" }) {
+    importWearables(result, app, result.sources ? classifySources(result.sources, "ios") : undefined);
+    toast.success(`${result.days.length} dias salvos`, { description: `Dados do ${app.name}` });
     router.push("/wearables");
   }
 
   if (state.step === "reading") return <Reading filename={state.filename} progress={state.progress} onCancel={() => { run.current++; setState({ step: "idle" }); }} />;
-  if (state.step === "review") return <Review result={state.result} onCancel={() => setState({ step: "idle" })} onSave={() => save(state.result)} />;
+  if (state.step === "review") return <Review result={state.result} onCancel={() => setState({ step: "idle" })} onSave={(app) => save(state.result, app)} />;
 
   return (
     <div>
@@ -65,12 +67,8 @@ export function WearableImport({ onBack }: { onBack: () => void }) {
         <h2 className="title">Importar dados de outros apps</h2>
       </div>
       <p className="mt-3 text-[15px] leading-relaxed text-ink-soft">
-        O Elo ainda não se conecta direto ao relógio. Você traz os dados que outros apps já guardam: o app Saúde do iPhone, Google Fit e Health
-        Connect, apps de relógios e anéis (Samsung Health, Garmin, Fitbit, Oura e outros) ou o relatório de um app de saúde com IA.
-      </p>
-      <p className="mt-2 text-[15px] leading-relaxed text-ink-soft">
-        Exporte o arquivo no app de origem e envie aqui. O Elo organiza batimento, sono, passos, saturação e pressão dia a dia, ao lado dos
-        seus exames, e mostra tudo na tela Sinais.
+        Exporte o arquivo no app de origem (app Saúde, Health Connect, Samsung Health, Garmin, Oura, um app de saúde com IA e outros) e envie aqui.
+        Na revisão você diz de qual app ele veio.
       </p>
 
       {state.step === "idle" && state.error && (
@@ -186,10 +184,27 @@ function Reading({ filename, progress, onCancel }: { filename: string; progress:
   );
 }
 
-function Review({ result, onCancel, onSave }: { result: ImportResult; onCancel: () => void; onSave: () => void }) {
+/** App sugerido para o arquivo: o do link (?app=), ou o que o próprio arquivo indica. */
+function guessPick(result: ImportResult): AppPick {
+  const q = typeof window === "undefined" ? null : new URLSearchParams(window.location.search);
+  const fromUrl = q?.get("app");
+  const k = q?.get("k");
+  if (fromUrl) return k === "ia" || k === "outro" ? { choice: k, name: fromUrl } : { choice: fromUrl, name: "" };
+  if (result.sources) return { choice: "apple-saude", name: "" };
+  if (/takeout/i.test(result.source.label)) return { choice: "google-fit", name: "" };
+  if (result.source.readBy === "ia" && result.source.label !== "Relatório organizado pela IA") {
+    const known = appRef(result.source.label);
+    return catalogApp(known.id) ? { choice: known.id, name: "" } : { choice: "ia", name: result.source.label };
+  }
+  return { choice: "", name: "" };
+}
+
+function Review({ result, onCancel, onSave }: { result: ImportResult; onCancel: () => void; onSave: (app: { id: string; name: string; kind: "central" | "fabricante" | "ia" | "outro" }) => void }) {
   const db = getDbSnapshot();
-  const replacing = db.wearableSource?.kind !== "importado" && db.wearableDays.length > 0;
-  const merging = db.wearableSource?.kind === "importado";
+  const apps = db.apps ?? [];
+  const [pick, setPick] = useState<AppPick>(() => guessPick(result));
+  const app = resolvePick(pick, apps);
+  const others = apps.some((a) => a.id !== app?.id) && db.wearableDays.length > 0;
   const missing = (Object.keys(METRIC_LABELS) as (keyof typeof METRIC_LABELS)[]).filter((k) => !result.metrics.includes(k));
   return (
     <div>
@@ -230,17 +245,23 @@ function Review({ result, onCancel, onSave }: { result: ImportResult; onCancel: 
           Elo mostra só o que foi medido.
         </p>
       )}
-      {replacing && (
-        <p className="mt-4 flex gap-2.5 rounded-2xl bg-warn-soft p-4 text-[15px] leading-relaxed text-ink">
-          <AlertIcon width={20} className="mt-0.5 shrink-0 text-warn" />
-          Ao salvar, os dados do relógio que estavam aqui são trocados pelos dados deste arquivo.
+      <div className="tile mt-4">
+        <AppPicker value={pick} onChange={setPick} apps={apps} />
+        {result.sources && result.sources.length > 0 && (
+          <p className="mt-2 text-sm text-muted">Gravaram estes dados: {result.sources.map((x) => x.name).join(", ")}. Eles entram em Apps e Aparelhos.</p>
+        )}
+      </div>
+      {others && <p className="mt-3 text-sm text-muted">Se outro app já trouxe dados do mesmo dia, cada medida vem do app atualizado por último.</p>}
+      {!app && (
+        <p className="mt-3 flex gap-2 text-sm text-muted" aria-live="polite">
+          <AlertIcon width={18} className="mt-0.5 shrink-0 text-warn" />
+          Escolha o app para salvar: assim você sabe de onde veio cada dado e pode desconectar depois.
         </p>
       )}
-      {merging && <p className="mt-4 text-sm text-muted">Os dias deste arquivo se juntam aos que você já importou; se um dia aparecer nos dois, vale o deste arquivo.</p>}
 
       <div className="sticky bottom-[calc(5rem+env(safe-area-inset-bottom))] mt-4 flex gap-2 bg-white/95 py-3 backdrop-blur">
         <button type="button" className="btn-secondary flex-1" onClick={onCancel}>Cancelar</button>
-        <button type="button" className="btn-primary flex-[2]" onClick={onSave}>Salvar {result.days.length} dias</button>
+        <button type="button" className="btn-primary flex-[2]" disabled={!app} onClick={() => app && onSave(app)}>Salvar {result.days.length} dias</button>
       </div>
     </div>
   );

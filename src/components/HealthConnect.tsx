@@ -18,8 +18,8 @@ export function usePlatform() {
 export async function syncNow(): Promise<number> {
   const p = appPlatform();
   if (p === "web") return 0;
-  const days = await readHealthDays();
-  return saveConnectedWearables(days, p);
+  const { days, found } = await readHealthDays();
+  return saveConnectedWearables(days, p, found);
 }
 
 /**

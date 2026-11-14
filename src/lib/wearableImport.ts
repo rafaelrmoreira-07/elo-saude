@@ -3,6 +3,7 @@
 import { DecodeUTF8, Unzip, UnzipInflate, strToU8, zipSync } from "fflate";
 import { addDays, formatDate, todayISO } from "./dates";
 import { generateJson, geminiConfigured } from "./gemini";
+import type { SourceSeen } from "./healthApps";
 import type { WearableDay, WearableMetric, WearableSource } from "./types";
 
 /**
@@ -45,6 +46,8 @@ export interface ImportResult {
   to: string;
   source: Required<Pick<WearableSource, "label" | "filename" | "readBy">>;
   notes: string[];
+  /** Exportação do Apple Saúde: quem gravou os dados (Apple Watch, Oura, Omron...). */
+  sources?: SourceSeen[];
 }
 
 export class ImportError extends Error {
@@ -68,7 +71,7 @@ export async function importWearableFile(file: File, onProgress?: Progress): Pro
   if (name.endsWith(".xml")) {
     const apple = new AppleHealthParser();
     await streamText(file, (t) => apple.push(t), onProgress);
-    return finish(apple.result(), file.name, "Apple Saúde", "direto");
+    return { ...finish(apple.result(), file.name, "Apple Saúde", "direto"), sources: apple.sources() };
   }
   if (/\.(csv|tsv|txt)$/.test(name)) {
     const text = await file.text();
@@ -105,6 +108,19 @@ export class AppleHealthParser {
   private rest = "";
   private days = new Map<string, Acc>();
   private found = false;
+  private origins = new Map<string, Set<string>>();
+
+  /** Quem gravou os dados, com o que cada um mediu. */
+  sources(): SourceSeen[] {
+    return [...this.origins.entries()].map(([name, metrics]) => ({ name, metrics }));
+  }
+
+  private origin(source: string, metric: string) {
+    if (source === "?") return;
+    const m = this.origins.get(source) ?? new Set<string>();
+    m.add(metric);
+    this.origins.set(source, m);
+  }
 
   push(text: string) {
     const buf = this.rest + text;
@@ -137,12 +153,15 @@ export class AppleHealthParser {
     const source = attr(tag, "sourceName") ?? "?";
     switch (type) {
       case "HKQuantityTypeIdentifierRestingHeartRate":
+        this.origin(source, "Batimentos em repouso");
         if (Number.isFinite(value)) this.acc(day).hr.push(value);
         break;
       case "HKQuantityTypeIdentifierHeartRateVariabilitySDNN":
+        this.origin(source, "Variabilidade cardíaca");
         if (Number.isFinite(value)) this.acc(day).hrv.push(value);
         break;
       case "HKQuantityTypeIdentifierOxygenSaturation":
+        this.origin(source, "Saturação");
         if (Number.isFinite(value)) this.acc(day).spo2.push(value <= 1 ? value * 100 : value);
         break;
       case "HKQuantityTypeIdentifierAppleSleepingBreathingDisturbances": {
@@ -152,6 +171,7 @@ export class AppleHealthParser {
         break;
       }
       case "HKQuantityTypeIdentifierBloodPressureSystolic":
+        this.origin(source, "Pressão arterial");
         if (Number.isFinite(value)) this.acc(day).sys.push(value);
         break;
       case "HKQuantityTypeIdentifierBloodPressureDiastolic":
@@ -159,17 +179,20 @@ export class AppleHealthParser {
         break;
       case "HKQuantityTypeIdentifierStepCount": {
         if (!Number.isFinite(value)) break;
+        this.origin(source, "Passos");
         const a = this.acc(day);
         a.steps.set(source, (a.steps.get(source) ?? 0) + value);
         break;
       }
       case "HKCategoryTypeIdentifierIrregularHeartRhythmEvent":
+        this.origin(source, "Ritmo irregular");
         this.acc(day).irregular++;
         break;
       case "HKCategoryTypeIdentifierSleepAnalysis": {
         const v = attr(tag, "value") ?? "";
         const end = attr(tag, "endDate");
         if (!/Asleep/.test(v) || !end) break;
+        this.origin(source, "Sono");
         const hours = (toTime(end) - toTime(start)) / 3_600_000;
         if (!(hours > 0 && hours < 16)) break;
         const a = this.acc(end.slice(0, 10)); // a noite conta no dia em que a pessoa acorda
@@ -264,7 +287,7 @@ async function fromZip(file: File, onProgress?: Progress): Promise<ImportResult>
   }
   await Promise.all(pending);
 
-  if (appleEntry) return finish(apple.result(), file.name, "Apple Saúde", "direto");
+  if (appleEntry) return { ...finish(apple.result(), file.name, "Apple Saúde", "direto"), sources: apple.sources() };
   // Google Takeout e apps de exportação: a primeira planilha diária reconhecível
   for (const c of csvs.sort((a, b) => scoreCsvName(b.name) - scoreCsvName(a.name))) {
     const parsed = parseDailyCsv(c.text);

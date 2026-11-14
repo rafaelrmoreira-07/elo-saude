@@ -3,7 +3,8 @@
 import NumberFlow from "@number-flow/react";
 import Link from "next/link";
 import { CHART, WearableChart } from "@/components/charts";
-import { GaugeIcon, RingIcon, WatchIcon } from "@/components/icons";
+import { ConnectionsSummary } from "@/components/Connections";
+import { WatchIcon } from "@/components/icons";
 import { AlertCard, Disclaimer, PageHeader, SectionTitle, Skeleton } from "@/components/ui";
 import { formatDate, todayISO } from "@/lib/dates";
 import { computeAlerts, fmt, hasBloodPressure, hasMetric, wearableSnapshot } from "@/lib/health";
@@ -11,14 +12,11 @@ import type { WearableMetric } from "@/lib/types";
 import { useDb } from "@/lib/store";
 import { HealthConnectCard, usePlatform } from "@/components/HealthConnect";
 
-/** Um ícone por tipo de aparelho: relógio, anel e medidor de pressão (o mesmo manômetro do cartão de pressão na tela Hoje). */
-const DEVICE_ICON: Record<string, typeof WatchIcon> = { relogio: WatchIcon, anel: RingIcon, medidor_pressao: GaugeIcon, importado: WatchIcon };
-
 export default function WearablesPage() {
   const db = useDb();
   return (
     <div>
-      <PageHeader title="Sinais">Batimentos, sono, saturação, passos e pressão, vindos do seu relógio, anel ou medidor de pressão.</PageHeader>
+      <PageHeader title="Sinais">Batimentos, sono, saturação, passos e pressão, vindos dos seus apps e aparelhos.</PageHeader>
       {db ? <Wearables db={db} /> : <Skeleton lines={5} />}
     </div>
   );
@@ -38,12 +36,9 @@ function Wearables({ db }: { db: NonNullable<ReturnType<typeof useDb>> }) {
       )}
       <div className="tile mt-2 flex flex-col items-center px-6 py-10 text-center">
         <WatchIcon width={40} className="text-faint" />
-        <p className="mt-3 text-lg font-medium text-ink">Nenhum dado de relógio, anel ou app de saúde</p>
-        <p className="mt-1 max-w-sm text-[15px] text-muted">
-          Exporte os dados do app Saúde do iPhone, do Google Fit ou Health Connect, do app do seu relógio ou anel, ou o relatório de um app de saúde com IA, e envie aqui.
-          Batimento, sono, saturação, passos e pressão aparecem nesta tela, junto dos exames.
-        </p>
-        <Link href="/enviar/?tipo=relogio" className="btn-primary mt-6">Importar dados de outros apps</Link>
+        <p className="mt-3 text-lg font-medium text-ink">Nenhum dado de app ou aparelho</p>
+        <p className="mt-1 max-w-sm text-[15px] text-muted">Conecte um app de saúde ou importe o arquivo que ele exporta.</p>
+        <Link href="/conexoes" className="btn-primary mt-6">Conectar app</Link>
       </div>
       </>
     );
@@ -62,35 +57,7 @@ function Wearables({ db }: { db: NonNullable<ReturnType<typeof useDb>> }) {
           <HealthConnectCard />
         </div>
       )}
-      {/* Origem dos dados: honesta sobre o que é simulação e o que veio de um arquivo */}
-      <div className="tile flex items-start gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white">{(() => { const Icon = DEVICE_ICON[db.devices[0]?.kind ?? "relogio"] ?? WatchIcon; return <Icon width={20} />; })()}</span>
-        <div className="min-w-0 flex-1">
-          {imported ? (
-            <>
-              <p className="text-[15px] font-medium leading-snug">{src.label}</p>
-              <p className="num text-sm text-muted">
-                Importado em {formatDate((src.importedAt ?? "").slice(0, 10))} · {days.length} dias, de {formatDate(days[0].date, { day: "2-digit", month: "2-digit" })} a{" "}
-                {formatDate(days.at(-1)!.date, { day: "2-digit", month: "2-digit" })}
-              </p>
-              <p className="text-sm text-muted">{src.readBy === "ia" ? "Organizado pela IA" : "Lido no seu aparelho, direto do arquivo"}</p>
-            </>
-          ) : (
-            <>
-              <p className="text-[15px] font-medium leading-snug">{db.devices.map((d) => d.name).join(" e ") || "Relógio"}</p>
-              <p className="text-sm text-muted">
-                {platform === "web"
-                  ? "O Elo ainda não se conecta direto ao relógio: para trazer os seus dados, importe o que outros apps exportam."
-                  : "Conecte acima para ler os seus dados, ou importe o que outros apps exportam."}
-              </p>
-              <p className="mt-1 text-sm text-muted">
-                Serve o app Saúde do iPhone, Google Fit e Health Connect, apps de relógios e anéis (Samsung Health, Garmin, Fitbit, Oura e outros) e relatórios de apps de saúde com IA.
-              </p>
-            </>
-          )}
-          <Link href="/enviar/?tipo=relogio" className="btn-quiet -ml-1 text-sm">{imported ? "Atualizar com um arquivo novo" : "Importar dados de outros apps"}</Link>
-        </div>
-      </div>
+      <ConnectionsSummary db={db} />
 
       {alerts.length > 0 && (
         <>

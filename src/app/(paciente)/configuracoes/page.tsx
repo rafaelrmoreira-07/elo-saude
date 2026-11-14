@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Switch } from "@/components/base/switch";
 import { ChevronRight } from "@/components/icons";
-import { HealthConnectCard } from "@/components/HealthConnect";
+import { AppsSection, DevicesSection } from "@/components/Connections";
 import { ProfileSettings } from "@/components/ProfileSettings";
 import { ReadingQuality } from "@/components/ReadingQuality";
 import { PageHeader, SectionTitle, Skeleton } from "@/components/ui";
@@ -74,7 +74,8 @@ export default function ConfiguracoesPage() {
           <SectionTitle>Plano</SectionTitle>
           <LinkCard href="/planos" title="Gratuito" text="Veja os planos Individual e Família." />
 
-          <Devices db={db} />
+          <AppsSection db={db} />
+          <DevicesSection db={db} />
           <ReadingSettings />
           <Notifications db={db} />
           <Privacy db={db} />
@@ -121,23 +122,6 @@ function Row({ label, value, danger }: { label: string; value: string; danger?: 
       <dt className={`w-32 shrink-0 font-medium ${danger ? "text-danger" : "text-muted"}`}>{label}</dt>
       <dd className="min-w-0 text-ink">{value}</dd>
     </div>
-  );
-}
-
-function Devices({ db }: { db: Db }) {
-  const names = db.devices.map((d) => d.name);
-  return (
-    <>
-      <SectionTitle>Aparelhos e apps conectados</SectionTitle>
-      <div className="mb-2 empty:hidden">
-        <HealthConnectCard />
-      </div>
-      <LinkCard
-        href="/wearables"
-        title={names.length ? names.join(", ") : "Nenhum aparelho conectado"}
-        text="Relógios, anéis e medidores de pressão. Cada sinal aparece conforme o aparelho."
-      />
-    </>
   );
 }
 
