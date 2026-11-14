@@ -45,11 +45,11 @@ Permissões em `android/app/src/main/AndroidManifest.xml`: só leitura dos 6 dad
 
 ## Antes de publicar nas lojas
 
-- **Chave da Gemini:** no app ela também pode ser extraída. Colocar um servidor pequeno (ex.: Cloudflare Worker) que guarde a chave e repasse os pedidos.
+- **Chave da Gemini:** no app ela pode ser extraída. O servidor pronto está em `server/ai-proxy` (Cloudflare Workers): publique-o, preencha `NEXT_PUBLIC_AI_PROXY_URL` no `.env.local` e deixe `NEXT_PUBLIC_GEMINI_API_KEY` vazia antes de gerar o app.
 - **Política de privacidade:** `public/privacidade.html` (publicada em `/elo-saude/privacidade.html`). O Health Connect mostra esse endereço; a Apple pede o link no App Store Connect.
 - **Apple:** conta Apple Developer (US$ 99/ano); explicar o uso do HealthKit na revisão.
 - **Google:** conta Google Play (US$ 25, uma vez); preencher a declaração de permissões do Health Connect.
-- **Ícones e tela de abertura:** os do projeto são os padrão do Capacitor. Gerar os do Elo (ex.: `@capacitor/assets`).
+- **Ícones e tela de abertura:** já são os do Elo. iPhone: `ios/App/App/Assets.xcassets` (1024 sem transparência). Android: ícone adaptável em `mipmap-*` (frente com a marca, fundo azul do Elo) e versões antigas quadrada e redonda. Imagens para as lojas em `docs/loja/` (App Store 1024, Google Play 512).
 
 ## Atualizar o app depois de mudar o site
 
