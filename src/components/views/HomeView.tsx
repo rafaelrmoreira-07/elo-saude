@@ -112,9 +112,9 @@ export function HomeView() {
           <div>
             <p className="text-[15px] font-medium text-ink">Nenhum dado de relógio, anel ou app de saúde</p>
             <p className="mt-0.5 text-[15px] text-muted">
-              Exames, remédios e vacinas funcionam do mesmo jeito. Para trazer batimento, sono e passos, exporte os dados do app Saúde, do Google, do app do relógio ou de um app de saúde com IA e envie aqui.
+              Exames, remédios e vacinas funcionam do mesmo jeito. Para trazer batimento, sono e passos, conecte ou importe os dados dos seus apps e aparelhos.
             </p>
-            <Link href="/enviar/?tipo=relogio" className="btn-quiet -ml-1 text-sm">Importar dados de outros apps</Link>
+            <Link href="/conexoes" className="btn-quiet -ml-1 text-sm">Gerenciar outros apps</Link>
           </div>
         </div>
       ) : (

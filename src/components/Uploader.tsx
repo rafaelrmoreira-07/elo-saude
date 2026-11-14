@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { ageFrom } from "@/lib/dates";
@@ -154,7 +155,7 @@ export function Uploader() {
 
   const notice = idle.notice && <p className="mb-4 rounded-2xl bg-warn-soft p-4 text-[15px] text-ink" role="status">{idle.notice}</p>;
 
-  if (mode === "relogio") return <WearableImport onBack={() => setMode("exames")} />;
+  if (mode === "relogio") return <WearableImport />;
 
   if (items.length) {
     const item = items[current];
@@ -224,15 +225,15 @@ export function Uploader() {
           <span className="block text-[15px] text-muted">Até {MAX_BATCH} de uma vez: PDF do laboratório ou imagem, até 10 MB cada</span>
         </span>
       </button>
-      <button type="button" onClick={() => setMode("relogio")} className="lift mt-2 flex w-full items-center gap-4 rounded-3xl bg-surface p-5 text-left">
+      <Link href="/conexoes" className="lift mt-2 flex w-full items-center gap-4 rounded-3xl bg-surface p-5 text-left">
         <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white">
           <WatchIcon width={28} />
         </span>
         <span>
-          <span className="block text-xl font-normal tracking-[-0.02em]">Importar dados de outros apps</span>
-          <span className="block text-[15px] text-muted">Relógio, anel, app Saúde, Google ou apps de saúde com IA: batimento, sono, passos, pressão</span>
+          <span className="block text-xl font-normal tracking-[-0.02em]">Gerenciar outros apps</span>
+          <span className="block text-[15px] text-muted">Conectar ou importar dados de apps e aparelhos: relógio, anel, app Saúde, Health Connect e apps de saúde com IA</span>
         </span>
-      </button>
+      </Link>
 
       <SectionTitle>Laudos recentes</SectionTitle>
       <ul className="divide-y divide-line border-y border-line">

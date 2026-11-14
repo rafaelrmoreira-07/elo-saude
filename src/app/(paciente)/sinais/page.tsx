@@ -38,7 +38,7 @@ function Wearables({ db }: { db: NonNullable<ReturnType<typeof useDb>> }) {
         <WatchIcon width={40} className="text-faint" />
         <p className="mt-3 text-lg font-medium text-ink">Nenhum dado de app ou aparelho</p>
         <p className="mt-1 max-w-sm text-[15px] text-muted">Conecte um app de saúde ou importe o arquivo que ele exporta.</p>
-        <Link href="/conexoes" className="btn-primary mt-6">Conectar app</Link>
+        <Link href="/conexoes" className="btn-primary mt-6">Gerenciar outros apps</Link>
       </div>
       </>
     );

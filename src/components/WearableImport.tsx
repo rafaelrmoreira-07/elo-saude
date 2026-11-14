@@ -11,6 +11,7 @@ import { getDbSnapshot, importWearables } from "@/lib/store";
 import { ImportError, importWearableFile, METRIC_LABELS, sampleAndroidCsv, sampleAppleExport, summarize, type ImportResult } from "@/lib/wearableImport";
 import { AlertIcon, CheckIcon, FileIcon, ShieldIcon, WatchIcon } from "./icons";
 import { AppPicker, resolvePick, type AppPick } from "./Connections";
+import { BackLink } from "./BackLink";
 import { SlidingTabs } from "./SlidingTabs";
 import { SectionTitle } from "./ui";
 
@@ -27,7 +28,7 @@ const SAMPLES = [
 ];
 
 /** Importar os dados do relógio ou anel a partir do arquivo que o celular exporta. */
-export function WearableImport({ onBack }: { onBack: () => void }) {
+export function WearableImport() {
   const router = useRouter();
   const [state, setState] = useState<State>({ step: "idle" });
   const [os, setOs] = useState<"iphone" | "android" | "outros">("iphone");
@@ -61,7 +62,7 @@ export function WearableImport({ onBack }: { onBack: () => void }) {
 
   return (
     <div>
-      <button type="button" onClick={onBack} className="btn-quiet -ml-1 mb-2 text-sm">Voltar para exames</button>
+      <BackLink fallback="/conexoes" />
       <div className="flex items-center gap-3">
         <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-accent text-ink"><WatchIcon width={26} /></span>
         <h2 className="title">Importar dados de outros apps</h2>

@@ -85,7 +85,7 @@ export function ConnectionsSummary({ db }: { db: Db }) {
       {last && <p className="num mt-1.5 text-sm text-muted">Dados até {formatDate(last)}</p>}
       <div className="mt-1 flex flex-wrap gap-x-4">
         <Link href="/configuracoes/#conexoes" className="btn-quiet -ml-1 text-sm">Gerenciar</Link>
-        <Link href="/conexoes" className="btn-quiet text-sm">Conectar app</Link>
+        <Link href="/conexoes" className="btn-quiet text-sm">Conectar ou importar</Link>
       </div>
     </div>
   );
