@@ -146,9 +146,9 @@ function Dashboard({
       <section className="tile flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Paciente</p>
-          <h1 className="display mt-0.5">{p.name}</h1>
+          <h1 className="display mt-0.5">{p.name || "Nome não informado"}</h1>
           <p className="text-[15px] text-ink-soft">
-            {p.sex === "F" ? "Feminino" : "Masculino"} · {ageFrom(p.birthDate)} anos · nasc. {formatDate(p.birthDate)}
+            {p.sex === "F" ? "Feminino" : "Masculino"} · {p.birthDate ? `${ageFrom(p.birthDate)} anos · nasc. ${formatDate(p.birthDate)}` : "idade não informada"}
             {p.bloodType ? ` · tipo ${p.bloodType}` : ""}
           </p>
           <dl className="mt-3 grid gap-1.5 text-[15px] sm:grid-cols-[auto_1fr] sm:gap-x-4">

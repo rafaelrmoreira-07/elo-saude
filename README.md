@@ -1,9 +1,16 @@
 # Elo Saúde · hub de saúde pessoal
 
-> **Site:** https://rafaelrmoreira-07.github.io/elo-saude/ (publicado sozinho a cada push no `main`, pelo `.github/workflows/pages.yml`)
->
-> Sites da apresentação de 14/11/2026 (versão do primeiro commit deste repositório):
-> https://suzetemirandasilva5601-cpu.github.io/Challenge-Poli/ · reserva: https://rafaelrmoreira-07.github.io/Challenge-Poli/
+## Acesse a plataforma
+
+| | Link | O que abre |
+|---|---|---|
+| 1 | **[Começar do zero](https://rafaelrmoreira-07.github.io/elo-saude/?persona=nova)** | App vazio, com o guia de boas-vindas, para cadastrar o perfil e inserir os próprios dados |
+| 2 | **[Paciente Carlos](https://rafaelrmoreira-07.github.io/elo-saude/?persona=carlos)** | App com o histórico completo do Carlos: 10 anos de exames, relógio, medidor de pressão e alertas |
+| 3 | **[Modo demo](https://rafaelrmoreira-07.github.io/elo-saude/demo/)** | Celular do paciente e computador do médico lado a lado, para apresentar no telão |
+
+> Os dados ficam salvos só no navegador. Abrir o link 1 ou 2 apaga o que estava salvo no app naquele navegador e carrega o perfil do início. Para continuar de onde parou, use o endereço sem `?persona=`: https://rafaelrmoreira-07.github.io/elo-saude/
+
+O site é publicado sozinho a cada push no `main` (`.github/workflows/pages.yml`). Versão da apresentação de 14/11/2026 (primeiro commit deste repositório): https://suzetemirandasilva5601-cpu.github.io/Challenge-Poli/ · reserva: https://rafaelrmoreira-07.github.io/Challenge-Poli/
 
 
 Protótipo para o desafio da Rivio (demo em 14/11/2026, Gama House). Usa IA para juntar o histórico de saúde de uma pessoa, do exame em papel de dez anos atrás aos dados dos wearables, e organizar tudo para ela e para o médico dela.

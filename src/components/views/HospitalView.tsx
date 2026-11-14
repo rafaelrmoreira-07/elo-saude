@@ -48,9 +48,9 @@ export function HospitalDashboard({
       <section className="flex flex-col gap-4 rounded-2xl bg-white p-5 md:flex-row md:items-start md:justify-between">
         <div>
           <p className="text-sm text-muted">Pasta de internação</p>
-          <h1 className="title mt-1">{p.name}</h1>
+          <h1 className="title mt-1">{p.name || "Nome não informado"}</h1>
           <p className="text-[15px] text-muted">
-            {p.sex === "F" ? "Feminino" : "Masculino"}, {ageFrom(p.birthDate)} anos, nascimento em {formatDate(p.birthDate)}
+            {p.sex === "F" ? "Feminino" : "Masculino"}, {p.birthDate ? `${ageFrom(p.birthDate)} anos, nascimento em ${formatDate(p.birthDate)}` : "idade não informada"}
             {p.bloodType ? `, sangue ${p.bloodType}` : ""}
           </p>
           <p className="mt-3 inline-flex items-center gap-2 rounded-xl bg-danger-soft px-3 py-1.5 text-[15px] text-danger">

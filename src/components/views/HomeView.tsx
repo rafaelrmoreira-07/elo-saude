@@ -48,10 +48,10 @@ export function HomeView() {
       <header className="t-reveal">
         <p className="text-[15px] text-muted">{today.charAt(0).toUpperCase() + today.slice(1)}</p>
         <h1 className="display mt-1">
-          {greeting()}, {p.name.split(" ")[0]}
+          {greeting()}{p.name ? `, ${p.name.split(" ")[0]}` : ""}
         </h1>
         <p className="mt-2 text-[15px] text-muted">
-          {ageFrom(p.birthDate)} anos{p.bloodType ? `, sangue ${p.bloodType}` : ""}
+          {[p.birthDate ? `${ageFrom(p.birthDate)} anos` : "Idade não informada", p.bloodType ? `sangue ${p.bloodType}` : ""].filter(Boolean).join(", ")}
         </p>
       </header>
 
