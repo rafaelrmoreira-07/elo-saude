@@ -426,7 +426,7 @@ function parseDate(v: string, fmt: DateFmt): string | null {
 
 // ---------------------------------------------------------------- IA
 
-const AI_SYSTEM = `Você organiza dados exportados de relógios, anéis e apps de saúde (Apple Saúde, Google Fit, Health Connect, Fitbit, Samsung Health, Garmin, Oura e outros) em um registro por dia.
+const AI_SYSTEM = `Você organiza dados exportados de relógios, anéis e apps de saúde (Apple Saúde, Google Fit, Health Connect, Fitbit, Samsung Health, Garmin, Oura, apps de saúde com IA e outros) em um registro por dia. O arquivo pode ser planilha, JSON, relatório em PDF ou foto/print da tela.
 Regras:
 - Use só o que está no arquivo. Nunca invente valores. Se um sinal não aparece num dia, deixe nulo.
 - Uma linha por data (AAAA-MM-DD). Se o arquivo traz várias medições no mesmo dia, resuma: média para batimentos em repouso, variabilidade e pressão; menor valor para saturação; soma para passos e para episódios de ritmo irregular; horas dormidas na noite que termina naquele dia.

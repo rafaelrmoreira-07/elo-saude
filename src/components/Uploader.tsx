@@ -233,8 +233,8 @@ export function Uploader() {
           <WatchIcon width={28} />
         </span>
         <span>
-          <span className="block text-xl font-normal tracking-[-0.02em]">Importar dados do relógio</span>
-          <span className="block text-[15px] text-muted">Arquivo exportado do Apple Saúde ou do Google: batimento, sono, passos</span>
+          <span className="block text-xl font-normal tracking-[-0.02em]">Importar dados de outros apps</span>
+          <span className="block text-[15px] text-muted">Relógio, anel, app Saúde, Google ou apps de saúde com IA: batimento, sono, passos, pressão</span>
         </span>
       </button>
 

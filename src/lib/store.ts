@@ -222,22 +222,6 @@ export async function saveExam(input: SaveExamInput): Promise<{ error: string } 
   return { docId };
 }
 
-/** Demo: injeta episódios de ritmo irregular nos últimos dias. Devolve false se a persona não tem relógio. */
-export function simulateIrregularRhythm(): boolean {
-  if (!getDbSnapshot().wearableDays.length) return false;
-  const today = todayISO();
-  const plan: Record<string, number> = { [today]: 2, [addDays(today, -1)]: 1, [addDays(today, -3)]: 1 };
-  update((db) => {
-    for (const d of db.wearableDays) {
-      if (plan[d.date]) {
-        d.irregularRhythmEvents = (d.irregularRhythmEvents ?? 0) + plan[d.date];
-        if (d.restingHr != null) d.restingHr += 4;
-      }
-    }
-  });
-  return true;
-}
-
 /**
  * Salva os dias importados de um arquivo do relógio. A primeira importação
  * substitui a simulação; as seguintes se juntam às anteriores (o dia mais novo

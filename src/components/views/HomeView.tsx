@@ -12,7 +12,7 @@ import NumberFlow from "@number-flow/react";
 import { ageFrom, formatDate } from "@/lib/dates";
 import { analyteSeries, computeAlerts, fmt, formatRef, hasBloodPressure, wearableSnapshot } from "@/lib/health";
 import { PERSONAS } from "@/lib/personas";
-import { resetDemo, simulateIrregularRhythm, useDb } from "@/lib/store";
+import { resetDemo, useDb } from "@/lib/store";
 import type { WearableDay } from "@/lib/types";
 
 function greeting(now = new Date()) {
@@ -113,11 +113,11 @@ export function HomeView() {
         <div className="tile flex items-start gap-3">
           <WatchIcon width={26} className="mt-0.5 shrink-0 text-faint" />
           <div>
-            <p className="text-[15px] font-medium text-ink">Nenhum dado de relógio ou anel</p>
+            <p className="text-[15px] font-medium text-ink">Nenhum dado de relógio, anel ou app de saúde</p>
             <p className="mt-0.5 text-[15px] text-muted">
-              Exames, remédios e vacinas funcionam do mesmo jeito. Para trazer batimento, sono e passos, exporte os dados do celular e envie aqui.
+              Exames, remédios e vacinas funcionam do mesmo jeito. Para trazer batimento, sono e passos, exporte os dados do app Saúde, do Google, do app do relógio ou de um app de saúde com IA e envie aqui.
             </p>
-            <Link href="/enviar/?tipo=relogio" className="btn-quiet -ml-1 text-sm">Importar dados do relógio</Link>
+            <Link href="/enviar/?tipo=relogio" className="btn-quiet -ml-1 text-sm">Importar dados de outros apps</Link>
           </div>
         </div>
       ) : (
@@ -213,9 +213,6 @@ export function HomeView() {
             </select>
           </label>
           <Link href="/impacto" className="btn-secondary">Ver indicadores de resultado</Link>
-          <button className="btn-secondary" disabled={!hasWearables} onClick={() => simulateIrregularRhythm()}>
-            Simular batimentos irregulares no relógio
-          </button>
           <button
             className="btn-danger"
             onClick={async () => {

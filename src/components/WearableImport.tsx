@@ -12,7 +12,7 @@ import { AlertIcon, CheckIcon, FileIcon, ShieldIcon, WatchIcon } from "./icons";
 import { SlidingTabs } from "./SlidingTabs";
 import { SectionTitle } from "./ui";
 
-const ACCEPT = ".zip,.xml,.csv,.tsv,.txt,.json,.pdf,application/zip,text/csv,application/json,application/pdf";
+const ACCEPT = ".zip,.xml,.csv,.tsv,.txt,.json,.pdf,.png,.jpg,.jpeg,.webp,.heic,application/zip,text/csv,application/json,application/pdf,image/*";
 
 type State =
   | { step: "idle"; error?: string; needsKey?: boolean }
@@ -28,7 +28,7 @@ const SAMPLES = [
 export function WearableImport({ onBack }: { onBack: () => void }) {
   const router = useRouter();
   const [state, setState] = useState<State>({ step: "idle" });
-  const [os, setOs] = useState<"iphone" | "android">("iphone");
+  const [os, setOs] = useState<"iphone" | "android" | "outros">("iphone");
   const fileRef = useRef<HTMLInputElement>(null);
   const run = useRef(0);
 
@@ -62,11 +62,15 @@ export function WearableImport({ onBack }: { onBack: () => void }) {
       <button type="button" onClick={onBack} className="btn-quiet -ml-1 mb-2 text-sm">Voltar para exames</button>
       <div className="flex items-center gap-3">
         <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-accent text-ink"><WatchIcon width={26} /></span>
-        <h2 className="title">Dados do relógio ou anel</h2>
+        <h2 className="title">Importar dados de outros apps</h2>
       </div>
       <p className="mt-3 text-[15px] leading-relaxed text-ink-soft">
-        Exporte os dados do app de saúde do celular e envie o arquivo aqui. O Elo organiza batimento, sono, passos, saturação e pressão
-        dia a dia, ao lado dos seus exames, e mostra tudo na tela Sinais.
+        O Elo ainda não se conecta direto ao relógio. Você traz os dados que outros apps já guardam: o app Saúde do iPhone, Google Fit e Health
+        Connect, apps de relógios e anéis (Samsung Health, Garmin, Fitbit, Oura e outros) ou o relatório de um app de saúde com IA.
+      </p>
+      <p className="mt-2 text-[15px] leading-relaxed text-ink-soft">
+        Exporte o arquivo no app de origem e envie aqui. O Elo organiza batimento, sono, passos, saturação e pressão dia a dia, ao lado dos
+        seus exames, e mostra tudo na tela Sinais.
       </p>
 
       {state.step === "idle" && state.error && (
@@ -77,9 +81,23 @@ export function WearableImport({ onBack }: { onBack: () => void }) {
       )}
 
       <SectionTitle>Como exportar</SectionTitle>
-      <SlidingTabs label="Celular" active={os} onChange={(k) => setOs(k as typeof os)} items={[{ key: "iphone", label: "iPhone" }, { key: "android", label: "Android" }]} />
+      <SlidingTabs
+        label="De onde vêm os dados"
+        active={os}
+        onChange={(k) => setOs(k as typeof os)}
+        items={[{ key: "iphone", label: "iPhone" }, { key: "android", label: "Android" }, { key: "outros", label: "Outros apps" }]}
+      />
       <div className="tile mt-3">
-        {os === "iphone" ? (
+        {os === "outros" ? (
+          <ol className="list-decimal space-y-2 pl-5 text-[15px] leading-relaxed text-ink-soft">
+            <li>
+              No app do relógio, do anel ou no app de saúde com IA, procure <strong className="font-medium text-ink">Exportar</strong>,{" "}
+              <strong className="font-medium text-ink">Baixar meus dados</strong> ou <strong className="font-medium text-ink">Compartilhar relatório</strong>.
+            </li>
+            <li>Serve planilha (CSV), arquivo JSON, relatório em PDF ou até um print da tela com os números.</li>
+            <li>Envie aqui. A IA lê o arquivo e organiza um registro por dia; nada é inventado: o que não estiver no arquivo fica em branco.</li>
+          </ol>
+        ) : os === "iphone" ? (
           <ol className="list-decimal space-y-2 pl-5 text-[15px] leading-relaxed text-ink-soft">
             <li>Abra o app <strong className="font-medium text-ink">Saúde</strong> e toque na sua foto, no canto de cima.</li>
             <li>Role até o fim e toque em <strong className="font-medium text-ink">Exportar Todos os Dados de Saúde</strong>.</li>
@@ -100,7 +118,7 @@ export function WearableImport({ onBack }: { onBack: () => void }) {
         <p className="mt-3 flex gap-2 border-t border-line pt-3 text-sm leading-relaxed text-muted">
           <ShieldIcon width={18} className="mt-0.5 shrink-0 text-ink" />
           A exportação do Apple Saúde e as planilhas são lidas aqui no seu aparelho: o arquivo não é enviado a lugar nenhum. Outros formatos
-          (um PDF de relatório, por exemplo) são organizados pela IA.
+          (relatório em PDF, JSON ou print da tela) são organizados pela IA.
         </p>
       </div>
 
@@ -119,7 +137,7 @@ export function WearableImport({ onBack }: { onBack: () => void }) {
         <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-accent text-ink"><FileIcon width={28} /></span>
         <span>
           <span className="block text-xl font-normal tracking-[-0.02em]">Escolher o arquivo exportado</span>
-          <span className="block text-[15px] text-navy-100">.zip do Apple Saúde ou do Google, planilha CSV, JSON ou PDF</span>
+          <span className="block text-[15px] text-navy-100">.zip do Apple Saúde ou do Google, planilha CSV, JSON, PDF ou print da tela</span>
         </span>
       </button>
 

@@ -8,7 +8,7 @@ import { AlertCard, Disclaimer, PageHeader, SectionTitle, Skeleton } from "@/com
 import { formatDate, todayISO } from "@/lib/dates";
 import { computeAlerts, fmt, hasBloodPressure, hasMetric, wearableSnapshot } from "@/lib/health";
 import type { WearableMetric } from "@/lib/types";
-import { simulateIrregularRhythm, useDb } from "@/lib/store";
+import { useDb } from "@/lib/store";
 
 /** Um ícone por tipo de aparelho: relógio, anel e medidor de pressão (o mesmo manômetro do cartão de pressão na tela Hoje). */
 const DEVICE_ICON: Record<string, typeof WatchIcon> = { relogio: WatchIcon, anel: RingIcon, medidor_pressao: GaugeIcon, importado: WatchIcon };
@@ -30,12 +30,12 @@ function Wearables({ db }: { db: NonNullable<ReturnType<typeof useDb>> }) {
     return (
       <div className="tile mt-2 flex flex-col items-center px-6 py-10 text-center">
         <WatchIcon width={40} className="text-faint" />
-        <p className="mt-3 text-lg font-medium text-ink">Nenhum dado de relógio ou anel</p>
+        <p className="mt-3 text-lg font-medium text-ink">Nenhum dado de relógio, anel ou app de saúde</p>
         <p className="mt-1 max-w-sm text-[15px] text-muted">
-          Exporte os dados do app Saúde (iPhone) ou do Google e do Health Connect (Android) e envie aqui. Batimento, sono, saturação e passos
-          aparecem nesta tela, junto dos exames.
+          Exporte os dados do app Saúde do iPhone, do Google Fit ou Health Connect, do app do seu relógio ou anel, ou o relatório de um app de saúde com IA, e envie aqui.
+          Batimento, sono, saturação, passos e pressão aparecem nesta tela, junto dos exames.
         </p>
-        <Link href="/enviar/?tipo=relogio" className="btn-primary mt-6">Importar dados do relógio</Link>
+        <Link href="/enviar/?tipo=relogio" className="btn-primary mt-6">Importar dados de outros apps</Link>
       </div>
     );
   const src = db.wearableSource;
@@ -63,13 +63,16 @@ function Wearables({ db }: { db: NonNullable<ReturnType<typeof useDb>> }) {
             </>
           ) : (
             <>
-              <p className="text-[15px] font-medium leading-snug">Simulação de demonstração</p>
+              <p className="text-[15px] font-medium leading-snug">Dados de demonstração</p>
               <p className="text-sm text-muted">
-                Dados fictícios de {db.devices.map((d) => d.name.replace(" (simulado)", "").toLowerCase()).join(" e ") || "relógio"}. Importe um arquivo para ver dados de verdade.
+                Estes números são fictícios ({db.devices.map((d) => d.name.replace(" (simulado)", "").toLowerCase()).join(" e ") || "relógio"}). O Elo ainda não se conecta direto ao relógio: para ver os seus dados, importe o que outros apps exportam.
+              </p>
+              <p className="mt-1 text-sm text-muted">
+                Serve o app Saúde do iPhone, Google Fit e Health Connect, apps de relógios e anéis (Samsung Health, Garmin, Fitbit, Oura e outros) e relatórios de apps de saúde com IA.
               </p>
             </>
           )}
-          <Link href="/enviar/?tipo=relogio" className="btn-quiet -ml-1 text-sm">{imported ? "Atualizar com um arquivo novo" : "Importar dados do relógio"}</Link>
+          <Link href="/enviar/?tipo=relogio" className="btn-quiet -ml-1 text-sm">{imported ? "Atualizar com um arquivo novo" : "Importar dados de outros apps"}</Link>
         </div>
       </div>
 
@@ -135,11 +138,6 @@ function Wearables({ db }: { db: NonNullable<ReturnType<typeof useDb>> }) {
         </Chart>
       )}
 
-      {!imported && (
-        <button className="btn-secondary mt-8 w-full" onClick={() => simulateIrregularRhythm()}>
-          Simular batimentos irregulares (demonstração)
-        </button>
-      )}
       <Disclaimer />
     </div>
   );

@@ -6,7 +6,7 @@ import { LogoMark } from "@/components/icons";
 import { absoluteUrl, asset } from "@/lib/paths";
 import { PERSONAS } from "@/lib/personas";
 import { shareState } from "@/lib/share";
-import { resetDemo, simulateIrregularRhythm, useDb } from "@/lib/store";
+import { resetDemo, useDb } from "@/lib/store";
 
 const PHONE_W = 390;
 const PHONE_H = 844;
@@ -58,14 +58,6 @@ export default function DemoPage() {
           <a href={asset("/impacto/")} target="_blank" rel="noopener" className="rounded-xl bg-white/10 px-3.5 py-2 text-sm font-medium hover:bg-white/15">
             Indicadores
           </a>
-                    <button
-            className="rounded-xl bg-white/10 px-3.5 py-2 text-sm font-medium hover:bg-white/15 disabled:opacity-40"
-            disabled={!db?.wearableDays.length}
-            title={db?.wearableDays.length ? undefined : "Esta persona não usa relógio"}
-            onClick={() => simulateIrregularRhythm()}
-          >
-            Simular ritmo irregular
-          </button>
           <button
             className="rounded-xl bg-white/10 px-3.5 py-2 text-sm font-medium text-danger-line hover:bg-white/15"
             onClick={async () => {
