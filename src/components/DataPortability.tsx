@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { toast } from "sonner";
+import { buildPdf, buildXlsx, downloadBlob, historySheets } from "@/lib/exportFiles";
 import { buildBundle, downloadJson, parseBundle } from "@/lib/fhir";
 import { asset } from "@/lib/paths";
 import { countFhirExport, getDbSnapshot, importRecords } from "@/lib/store";
@@ -29,6 +30,21 @@ export function DataPortability() {
     }
   }
 
+  async function exportAs(kind: "pdf" | "xlsx") {
+    setBusy(true);
+    try {
+      const db = getDbSnapshot();
+      const day = new Date().toISOString().slice(0, 10);
+      if (kind === "pdf") downloadBlob(`elo-saude-historico-${day}.pdf`, await buildPdf(db));
+      else downloadBlob(`elo-saude-historico-${day}.xlsx`, buildXlsx(historySheets(db)));
+      toast.success(kind === "pdf" ? "PDF baixado" : "Planilha baixada", { description: `${db.labResults.length} resultados de exame, remédios, vacinas e consultas.` });
+    } catch (e) {
+      toast.error("Não consegui gerar o arquivo", { description: e instanceof Error ? e.message : undefined });
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <div className="tile space-y-4">
       <div>
@@ -47,6 +63,15 @@ export function DataPortability() {
         >
           <DownloadIcon width={18} /> Baixar meu histórico (FHIR)
         </button>
+        <p className="mt-3 text-sm text-muted">Para ler, imprimir ou abrir no Excel:</p>
+        <div className="mt-2 grid grid-cols-2 gap-2">
+          <button type="button" className="btn-secondary" disabled={busy} onClick={() => exportAs("pdf")}>
+            <DownloadIcon width={18} /> PDF
+          </button>
+          <button type="button" className="btn-secondary" disabled={busy} onClick={() => exportAs("xlsx")}>
+            <DownloadIcon width={18} /> Excel
+          </button>
+        </div>
       </div>
       <div className="border-t border-line pt-4">
         <p className="text-[15px] font-medium">Trazer de outro sistema</p>

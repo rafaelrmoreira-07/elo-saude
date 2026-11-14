@@ -24,7 +24,7 @@ export default function WearablesPage() {
 }
 
 function Wearables({ db }: { db: NonNullable<ReturnType<typeof useDb>> }) {
-  const alerts = computeAlerts(db).filter((a) => a.kind !== "exames" && a.kind !== "cruzado" && a.kind !== "pos_alta");
+  const alerts = computeAlerts(db).filter((a) => a.kind !== "exames" && a.kind !== "cruzado" && a.kind !== "pos_alta" && a.kind !== "nao_lido");
   const days = db.wearableDays;
   if (!days.length)
     return (

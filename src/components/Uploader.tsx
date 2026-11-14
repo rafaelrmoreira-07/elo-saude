@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { ageFrom } from "@/lib/dates";
 import { ACCEPTED_TYPES, extractLabReport, fileType, MAX_UPLOAD_BYTES, NoKeyError } from "@/lib/extraction";
-import { checkRepeats, labStatus } from "@/lib/health";
+import { NOT_READ, checkRepeats, labStatus } from "@/lib/health";
 import { asset } from "@/lib/paths";
 import { stageOf } from "@/lib/quality";
 import { getDbSnapshot, recordReadingReview, saveExam, useDb, type SaveExamInput } from "@/lib/store";
@@ -274,9 +274,6 @@ interface Row {
 }
 
 /** Valor que a IA não conseguiu ler: precisa ser preenchido ou removido. */
-/** Texto salvo no lugar do valor quando nem a IA nem a pessoa conseguiram ler. */
-const NOT_READ = "não lido";
-
 const isMissing = (r: Row) => r.confidence != null && !r.value.trim() && !r.valueText;
 /** Valor lido com dúvida, ainda não conferido. */
 const needsCheck = (r: Row) => !r.checked && (isMissing(r) || r.confidence === "baixa" || r.confidence === "media");

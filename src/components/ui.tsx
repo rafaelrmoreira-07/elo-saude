@@ -129,14 +129,14 @@ export function AlertCard({
                 {alert.evidence.map((e) => <li key={e}>· {e}</li>)}
               </ul>
             )}
-            {cta && insight && alert.links && alert.links.length > 0 && (
+            {cta && (insight || alert.kind === "nao_lido") && alert.links && alert.links.length > 0 && (
               <div className="mt-4 flex flex-col gap-2">
                 {alert.links.map((l) => (
                   <Link key={l.href} href={l.href} className="btn-secondary">{l.label}</Link>
                 ))}
               </div>
             )}
-            {cta && !insight && (
+            {cta && !insight && alert.kind !== "nao_lido" && (
               <div className="mt-4 flex flex-col gap-2">
                 {urgent && <Link href="/compartilhar" className="btn-primary">Montar relatório para o médico</Link>}
                 {alert.kind === "pos_alta" ? (

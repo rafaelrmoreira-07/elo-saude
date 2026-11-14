@@ -8,9 +8,11 @@ import { SectionTitle, Skeleton, StatusBadge } from "@/components/ui";
 import NumberFlow from "@number-flow/react";
 import { RECENT_DAYS } from "@/components/RecentExams";
 import { daysBetween, formatDate, todayISO } from "@/lib/dates";
-import { analyteSeries, fmt, formatRef, labStatus, medicationMarkers } from "@/lib/health";
+import { analyteSeries, fmt, formatRef, isNotRead, labStatus, medicationMarkers } from "@/lib/health";
 import { mixedUnits, namesInReports, resultOrigin } from "@/lib/provenance";
-import { openDocumentFile, useDb } from "@/lib/store";
+import { fillLabValue, openDocumentFile, useDb } from "@/lib/store";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export function ExameView() {
   const db = useDb();
@@ -103,7 +105,7 @@ export function ExameView() {
         {[...s.results].reverse().map((r) => {
           const doc = r.documentId ? docs.get(r.documentId) : undefined;
           return (
-            <li key={r.id} className="flex min-h-16 items-center justify-between gap-3 py-3">
+            <li key={r.id} className={`flex min-h-16 flex-wrap items-center justify-between gap-3 py-3 ${isNotRead(r) ? "-mx-3 rounded-xl bg-warn-soft px-3" : ""}`}>
               <div className="min-w-0">
                 <p className="num text-[15px] font-medium">{formatDate(r.date)}</p>
                 <p className="truncate text-sm text-muted">
@@ -120,10 +122,33 @@ export function ExameView() {
                   </button>
                 )}
               </div>
+              {isNotRead(r) && <FillValue id={r.id} unit={r.unit} />}
             </li>
           );
         })}
       </ul>
     </div>
+  );
+}
+
+/** Valor que a leitura não conseguiu ler: a pessoa digita olhando o laudo original. */
+function FillValue({ id, unit }: { id: string; unit: string }) {
+  const [v, setV] = useState("");
+  const n = Number(v.replace(/\./g, "").replace(",", "."));
+  const ok = v.trim() !== "" && Number.isFinite(n);
+  return (
+    <form
+      className="w-full"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (ok && fillLabValue(id, n)) toast.success("Valor preenchido", { description: "O histórico deste exame está completo." });
+      }}
+    >
+      <p className="text-sm font-medium text-warn">Não foi possível ler este valor no laudo. Digite olhando o original.</p>
+      <div className="mt-2 flex gap-2">
+        <input className="input num flex-1 bg-white" inputMode="decimal" value={v} onChange={(e) => setV(e.target.value)} placeholder={unit ? `Valor em ${unit}` : "Valor"} aria-label="Valor do exame" />
+        <button className="btn-primary shrink-0" disabled={!ok}>Salvar</button>
+      </div>
+    </form>
   );
 }

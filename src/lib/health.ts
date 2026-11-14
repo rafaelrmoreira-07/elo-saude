@@ -20,6 +20,10 @@ export function formatRef(r: Pick<LabResult, "refLow" | "refHigh" | "refText">):
   return r.refText ?? "—";
 }
 
+/** Texto salvo no lugar do valor quando nem a IA nem a pessoa conseguiram ler o laudo. */
+export const NOT_READ = "não lido";
+export const isNotRead = (r: Pick<LabResult, "value" | "valueText">) => r.value == null && r.valueText === NOT_READ;
+
 export function fmt(n: number): string {
   return n.toLocaleString("pt-BR", { maximumFractionDigits: 2 });
 }
@@ -213,6 +217,23 @@ export function computeAlerts(db: Db, today = todayISO()): HealthAlert[] {
       clinical: `Registro do paciente no dia ${fu.day} pós-alta (${fu.admission.procedure}): ${ci.symptoms.join(", ").toLowerCase()}${ci.tookMeds ? "" : "; não tomou os remédios no dia"}.`,
       clinicalNote: red ? "Sintoma de alerta relatado: contato com o paciente hoje." : undefined,
       evidence: [`Internação: ${fu.admission.procedure}`, `Alta em ${formatDate(fu.discharge.date)}`, ci.tookMeds ? "Tomou os remédios" : "Não tomou os remédios no dia"],
+    });
+  }
+
+  // 7. Valores que não foram lidos no laudo: pedem que a pessoa complete à mão
+  const notRead = db.labResults.filter(isNotRead).sort((a, b) => b.date.localeCompare(a.date));
+  if (notRead.length) {
+    const names = notRead.map((r) => `${r.name} (${formatDate(r.date)})`);
+    alerts.push({
+      id: `nao_lido-${notRead.map((r) => r.id).join("-")}`,
+      kind: "nao_lido",
+      severity: "atencao",
+      title: notRead.length === 1 ? "1 valor de exame não foi lido" : `${notRead.length} valores de exame não foram lidos`,
+      message: `A leitura automática não conseguiu ler ${notRead.length === 1 ? "este valor" : "estes valores"} no laudo, e ${notRead.length === 1 ? "ele está salvo" : "eles estão salvos"} como "não lido". O histórico fica incompleto até você preencher.`,
+      recommendation: "Abra o exame e digite o valor olhando o laudo original, ou envie de novo uma foto mais nítida.",
+      evidence: names,
+      clinical: `Valores não lidos no laudo enviado pelo paciente: ${names.join(", ")}. Conferir no documento original.`,
+      links: [...new Map(notRead.map((r) => [r.analyteKey, { label: `Preencher ${r.name}`, href: `/exame/?a=${encodeURIComponent(r.analyteKey)}` }])).values()].slice(0, 3),
     });
   }
 

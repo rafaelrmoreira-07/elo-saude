@@ -264,6 +264,19 @@ export function importWearables(res: ImportResult) {
   });
 }
 
+/** Completa à mão um valor que ficou "não lido" na leitura do laudo. */
+export function fillLabValue(id: string, value: number): boolean {
+  if (!Number.isFinite(value)) return false;
+  return update((db) => {
+    const r = db.labResults.find((x) => x.id === id);
+    if (!r) return false;
+    r.value = value;
+    r.valueText = undefined;
+    r.review = "adicionado";
+    return true;
+  });
+}
+
 /** Cadastro do guia de boas-vindas e edição do perfil em Configurações. */
 export function saveProfile(profile: {
   name: string;

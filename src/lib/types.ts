@@ -295,7 +295,7 @@ export type AlertSeverity = "atencao" | "procure_medico";
 export interface HealthAlert {
   id: string;
   /** "cruzado": junta um sinal dos wearables com um exame ("Juntando seus dados"). "pos_alta": sintoma do registro diário depois da alta. */
-  kind: "ritmo_irregular" | "apneia" | "pressao" | "fc_repouso" | "exames" | "cruzado" | "pos_alta";
+  kind: "ritmo_irregular" | "apneia" | "pressao" | "fc_repouso" | "exames" | "cruzado" | "pos_alta" | "nao_lido";
   severity: AlertSeverity;
   title: string;
   message: string;
