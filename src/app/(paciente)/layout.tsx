@@ -6,6 +6,7 @@ import { AppHealthAutoSync } from "@/components/HealthConnect";
 import { ExamSearch } from "@/components/ExamSearch";
 import { GearIcon, Logo } from "@/components/icons";
 import { OnboardingGate } from "@/components/OnboardingGate";
+import { PolicyUpdate } from "@/components/PolicyUpdate";
 
 export default function PacienteLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -28,6 +29,7 @@ export default function PacienteLayout({ children }: { children: React.ReactNode
           </Link>
         </div>
       </header>
+      <PolicyUpdate />
       <ChatNotifier />
       <AppHealthAutoSync />
       <ChatLauncher />

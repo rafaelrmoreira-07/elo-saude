@@ -66,6 +66,8 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>NSHealthShareUsageDescription</key>
 	<string>O Elo lê batimentos, variabilidade cardíaca, sono, saturação, passos e pressão do app Saúde para organizar seu histórico e avisar quando procurar um médico. Os dados ficam no seu aparelho.</string>
 	<key>NSHealthUpdateUsageDescription</key>

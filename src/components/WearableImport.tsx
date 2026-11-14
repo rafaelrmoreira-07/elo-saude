@@ -53,7 +53,7 @@ export function WearableImport({ onBack }: { onBack: () => void }) {
   function save(result: ImportResult, app: { id: string; name: string; kind: "central" | "fabricante" | "ia" | "outro" }) {
     importWearables(result, app, result.sources ? classifySources(result.sources, "ios") : undefined);
     toast.success(`${result.days.length} dias salvos`, { description: `Dados do ${app.name}` });
-    router.push("/wearables");
+    router.push("/sinais");
   }
 
   if (state.step === "reading") return <Reading filename={state.filename} progress={state.progress} onCancel={() => { run.current++; setState({ step: "idle" }); }} />;

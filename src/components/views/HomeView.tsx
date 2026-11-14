@@ -108,7 +108,7 @@ export function HomeView() {
         <p className="tile text-[15px] text-muted">Nenhum alerta. Eu aviso na Conversa se aparecer algum.</p>
       )}
 
-      <SectionTitle action={hasWearables ? <SectionLink href="/wearables">Ver gráficos</SectionLink> : undefined}>{stale ? `Sinais até ${formatDate(w.until, { day: "2-digit", month: "2-digit" })}` : "Sinais dos últimos 7 dias"}</SectionTitle>
+      <SectionTitle action={hasWearables ? <SectionLink href="/sinais">Ver gráficos</SectionLink> : undefined}>{stale ? `Sinais até ${formatDate(w.until, { day: "2-digit", month: "2-digit" })}` : "Sinais dos últimos 7 dias"}</SectionTitle>
       {!hasWearables ? (
         <div className="tile flex items-start gap-3">
           <WatchIcon width={26} className="mt-0.5 shrink-0 text-faint" />

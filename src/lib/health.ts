@@ -281,7 +281,7 @@ function crossInsights(db: Db, alerts: HealthAlert[], today: string): HealthAler
   const labFact = (r: LabResult, dir: string) =>
     `seu último ${r.name} (${formatDate(r.date)}) estava ${dir} da referência do laudo: ${fmt(r.value!)} ${r.unit}`;
   const examLink = (r: LabResult) => ({ label: `Ver ${r.name}`, href: `/exame/?a=${encodeURIComponent(r.analyteKey)}` });
-  const signals = { label: "Ver sinais do relógio", href: "/wearables" };
+  const signals = { label: "Ver sinais do relógio", href: "/sinais" };
   const out: HealthAlert[] = [];
 
   const hr = restingHrTrend(db.wearableDays, today);

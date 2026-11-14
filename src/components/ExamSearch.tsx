@@ -20,7 +20,7 @@ const FEATURES: { label: string; hint: string; keywords: string; href?: string; 
   { label: "Relatório para o médico", hint: "Link com prazo para a consulta", keywords: "consulta compartilhar link medico", href: "/compartilhar", icon: DoctorIcon },
   { label: "Internação", hint: "Pasta para o hospital, alta e pós-alta", keywords: "cirurgia hospital autorizacao plano alta pos-alta internar", href: "/internacao", icon: BedIcon },
   { label: "Quem tem acesso", hint: "Ver e revogar links", keywords: "revogar acesso links compartilhados", href: "/acessos", icon: DoctorIcon },
-  { label: "Sinais do relógio e da pressão", hint: "Gráficos de 14 a 90 dias", keywords: "pressao batimentos sono saturacao relogio wearable", href: "/wearables", icon: VitalsIcon },
+  { label: "Sinais do relógio e da pressão", hint: "Gráficos de 14 a 90 dias", keywords: "pressao batimentos sono saturacao relogio wearable", href: "/sinais", icon: VitalsIcon },
   { label: "Baixar ou importar histórico (FHIR)", hint: "Levar para outro sistema ou trazer de lá", keywords: "exportar importar fhir rnds meu sus digital dados", href: "/configuracoes/dados", icon: DownloadIcon },
   { label: "Qualidade da leitura", hint: "Quanto você corrigiu dos laudos lidos", keywords: "ia leitura correcao precisao", href: "/configuracoes#qualidade", icon: ScanIcon },
   { label: "Indicadores de resultado", hint: "O que hospitais e planos pagariam", keywords: "impacto metricas resultado negocio", href: "/impacto", icon: ChartIcon },

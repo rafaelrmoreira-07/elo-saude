@@ -77,7 +77,7 @@ function actionFor(r: RawReply): ChatAction[] {
     case "ver_exames":
       return [{ kind: "link", label: "Ver exames", href: "/exames" }];
     case "ver_sinais":
-      return [{ kind: "link", label: "Ver sinais do relógio", href: "/wearables" }];
+      return [{ kind: "link", label: "Ver sinais do relógio", href: "/sinais" }];
     case "ver_remedios":
       return [{ kind: "link", label: "Ver histórico", href: "/historico" }];
     case "relatorio_medico":

@@ -21,4 +21,21 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
         SceneDelegateProxy.shared.scene(scene, continue: userActivity)
     }
+
+    // Esconde a tela na lista de apps abertos: os dados de saúde não aparecem na miniatura.
+    private var privacyCover: UIView?
+
+    func sceneWillResignActive(_ scene: UIScene) {
+        guard privacyCover == nil, let win = window else { return }
+        let cover = UIView(frame: win.bounds)
+        cover.backgroundColor = .white
+        cover.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        win.addSubview(cover)
+        privacyCover = cover
+    }
+
+    func sceneDidBecomeActive(_ scene: UIScene) {
+        privacyCover?.removeFromSuperview()
+        privacyCover = nil
+    }
 }

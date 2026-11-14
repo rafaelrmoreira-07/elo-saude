@@ -285,7 +285,7 @@ async function describeVitals(say: Say) {
       ...(w.sleepHours != null ? [`• Sono: *${fmt(w.sleepHours)} h* por noite`] : []),
       ...(w.steps != null ? [`• Passos: *${w.steps.toLocaleString("pt-BR")}* por dia`] : []),
     ].join("\n"),
-    actions: [{ kind: "link", label: "Ver gráficos", href: "/wearables" }],
+    actions: [{ kind: "link", label: "Ver gráficos", href: "/sinais" }],
   });
 }
 

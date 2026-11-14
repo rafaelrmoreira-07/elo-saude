@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { todayISO } from "@/lib/dates";
+import { ageFrom, todayISO } from "@/lib/dates";
 import { asset } from "@/lib/paths";
 import { resetDemo, saveConsents, saveProfile } from "@/lib/store";
 import { FileIcon, LogoMark, ShieldIcon, WatchIcon } from "./icons";
@@ -69,6 +69,8 @@ export function Onboarding() {
   const [allergies, setAllergies] = useState("");
   const [agree, setAgree] = useState(false);
   const [ia, setIa] = useState(false);
+  const [guardian, setGuardian] = useState(false);
+  const minor = /^\d{4}-\d{2}-\d{2}$/.test(birthDate) && birthDate >= "1900-01-01" && ageFrom(birthDate) < 18;
   const [error, setError] = useState<string | null>(null);
   const atForm = step === STEPS.length;
   const total = STEPS.length + 1;
@@ -79,6 +81,7 @@ export function Onboarding() {
     if (!birthDate || birthDate > todayISO() || birthDate < "1900-01-01") return setError("Informe uma data de nascimento válida.");
     if (!sex) return setError("Escolha o sexo.");
     if (!agree) return setError("Para usar o Elo, é preciso autorizar o tratamento dos seus dados de saúde.");
+    if (minor && !guardian) return setError("Menores de 18 anos: o cadastro precisa da autorização de um dos pais ou do responsável legal.");
     saveConsents(ia);
     saveProfile({
       name: name.trim().replace(/\s+/g, " "),
@@ -161,6 +164,12 @@ export function Onboarding() {
                   <a href={asset("/privacidade.html")} target="_blank" rel="noopener" className="font-medium underline underline-offset-4">Política de Privacidade</a>.
                 </span>
               </label>
+              {minor && (
+                <label className="flex cursor-pointer gap-3 rounded-xl bg-warn-soft p-3 text-[15px] leading-relaxed text-ink">
+                  <input type="checkbox" className="mt-1 h-5 w-5 shrink-0 accent-[var(--color-ink)]" checked={guardian} onChange={(e) => setGuardian(e.target.checked)} />
+                  <span>Sou pai, mãe ou responsável legal e faço este cadastro autorizando o tratamento dos dados de saúde (LGPD, art. 14).</span>
+                </label>
+              )}
               <label className="flex cursor-pointer gap-3 text-[15px] leading-relaxed text-ink">
                 <input type="checkbox" className="mt-1 h-5 w-5 shrink-0 accent-[var(--color-ink)]" checked={ia} onChange={(e) => setIa(e.target.checked)} />
                 <span>

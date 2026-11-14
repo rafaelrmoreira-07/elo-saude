@@ -142,7 +142,7 @@ export function AlertCard({
                 {alert.kind === "pos_alta" ? (
                   <Link href="/internacao" className="btn-secondary">Abrir o pós-alta</Link>
                 ) : alert.kind !== "exames" ? (
-                  <Link href="/wearables" className="btn-secondary">Ver medições</Link>
+                  <Link href="/sinais" className="btn-secondary">Ver medições</Link>
                 ) : (
                   <Link href="/exames" className="btn-secondary">Ver exames</Link>
                 )}
