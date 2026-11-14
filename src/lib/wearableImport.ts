@@ -547,6 +547,7 @@ export function summarize(days: WearableDay[], k: WearableMetric): { value: numb
 export function sourceLine(src: WearableSource | undefined): string {
   if (!src || src.kind === "simulado") return "relógio e medidor ligados ao app";
   const when = src.importedAt ? ` em ${formatDate(src.importedAt.slice(0, 10))}` : "";
+  if (src.connected) return `${src.label ?? "app de saúde"} do celular do paciente, sincronizado${when}`;
   const how = src.readBy === "ia" ? "organizado pela IA" : "lido no aparelho do paciente";
   return `${src.label ?? "arquivo"}, importado${when} (${how})`;
 }

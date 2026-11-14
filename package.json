@@ -12,10 +12,19 @@
     "exemplos:laudo": "node scripts/gerar-exemplo-laudo-descritivo.mjs",
     "typecheck": "next typegen && tsc --noEmit",
     "icones": "node scripts/gerar-icones.mjs",
-    "build:pages": "NEXT_PUBLIC_BASE_PATH=/elo-saude next build"
+    "build:pages": "NEXT_PUBLIC_BASE_PATH=/elo-saude next build",
+    "app:sync": "next build && cap sync",
+    "app:ios": "npm run app:sync && cap open ios",
+    "app:android": "npm run app:sync && cap open android"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
+    "@capacitor/android": "^8.6.2",
+    "@capacitor/core": "^8.6.2",
+    "@capacitor/filesystem": "^8.1.5",
+    "@capacitor/ios": "^8.6.2",
+    "@capacitor/share": "^8.0.3",
+    "@capgo/capacitor-health": "^8.13.0",
     "@number-flow/react": "^0.6.2",
     "@phosphor-icons/react": "^2.1.10",
     "class-variance-authority": "^0.7.1",
@@ -33,6 +42,7 @@
     "vaul": "^1.1.2"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.6.2",
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^20",
     "@types/qrcode": "^1.5.6",

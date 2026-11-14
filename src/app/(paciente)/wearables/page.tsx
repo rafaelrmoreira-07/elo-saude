@@ -9,6 +9,7 @@ import { formatDate, todayISO } from "@/lib/dates";
 import { computeAlerts, fmt, hasBloodPressure, hasMetric, wearableSnapshot } from "@/lib/health";
 import type { WearableMetric } from "@/lib/types";
 import { useDb } from "@/lib/store";
+import { HealthConnectCard, usePlatform } from "@/components/HealthConnect";
 
 /** Um ícone por tipo de aparelho: relógio, anel e medidor de pressão (o mesmo manômetro do cartão de pressão na tela Hoje). */
 const DEVICE_ICON: Record<string, typeof WatchIcon> = { relogio: WatchIcon, anel: RingIcon, medidor_pressao: GaugeIcon, importado: WatchIcon };
@@ -24,10 +25,17 @@ export default function WearablesPage() {
 }
 
 function Wearables({ db }: { db: NonNullable<ReturnType<typeof useDb>> }) {
+  const platform = usePlatform();
   const alerts = computeAlerts(db).filter((a) => a.kind !== "exames" && a.kind !== "cruzado" && a.kind !== "pos_alta" && a.kind !== "nao_lido");
   const days = db.wearableDays;
   if (!days.length)
     return (
+      <>
+      {platform !== "web" && (
+        <div className="mb-3">
+          <HealthConnectCard />
+        </div>
+      )}
       <div className="tile mt-2 flex flex-col items-center px-6 py-10 text-center">
         <WatchIcon width={40} className="text-faint" />
         <p className="mt-3 text-lg font-medium text-ink">Nenhum dado de relógio, anel ou app de saúde</p>
@@ -37,6 +45,7 @@ function Wearables({ db }: { db: NonNullable<ReturnType<typeof useDb>> }) {
         </p>
         <Link href="/enviar/?tipo=relogio" className="btn-primary mt-6">Importar dados de outros apps</Link>
       </div>
+      </>
     );
   const src = db.wearableSource;
   const imported = src?.kind === "importado";
@@ -48,6 +57,11 @@ function Wearables({ db }: { db: NonNullable<ReturnType<typeof useDb>> }) {
 
   return (
     <div>
+      {platform !== "web" && (
+        <div className="mb-3">
+          <HealthConnectCard />
+        </div>
+      )}
       {/* Origem dos dados: honesta sobre o que é simulação e o que veio de um arquivo */}
       <div className="tile flex items-start gap-3">
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white">{(() => { const Icon = DEVICE_ICON[db.devices[0]?.kind ?? "relogio"] ?? WatchIcon; return <Icon width={20} />; })()}</span>
@@ -65,7 +79,9 @@ function Wearables({ db }: { db: NonNullable<ReturnType<typeof useDb>> }) {
             <>
               <p className="text-[15px] font-medium leading-snug">{db.devices.map((d) => d.name).join(" e ") || "Relógio"}</p>
               <p className="text-sm text-muted">
-                O Elo ainda não se conecta direto ao relógio: para trazer os seus dados, importe o que outros apps exportam.
+                {platform === "web"
+                  ? "O Elo ainda não se conecta direto ao relógio: para trazer os seus dados, importe o que outros apps exportam."
+                  : "Conecte acima para ler os seus dados, ou importe o que outros apps exportam."}
               </p>
               <p className="mt-1 text-sm text-muted">
                 Serve o app Saúde do iPhone, Google Fit e Health Connect, apps de relógios e anéis (Samsung Health, Garmin, Fitbit, Oura e outros) e relatórios de apps de saúde com IA.

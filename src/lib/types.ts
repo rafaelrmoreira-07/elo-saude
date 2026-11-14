@@ -139,6 +139,8 @@ export interface WearableSource {
   importedAt?: string;
   /** Como o arquivo foi lido: direto no navegador ou organizado pela IA. */
   readBy?: "direto" | "ia";
+  /** No app: dados lidos direto da central de saúde do celular (Apple Saúde ou Health Connect). */
+  connected?: "ios" | "android";
 }
 
 export const SCOPES = [

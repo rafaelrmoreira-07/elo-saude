@@ -254,6 +254,35 @@ export function importWearables(res: ImportResult) {
   });
 }
 
+/**
+ * App de iPhone e Android: salva os dias lidos do Apple Saúde ou do Health
+ * Connect. Junta com o que já havia (o dia mais novo vale), como a importação.
+ */
+export function saveConnectedWearables(days: WearableDay[], platform: "ios" | "android"): number {
+  if (!days.length) return 0;
+  const label = platform === "ios" ? "Apple Saúde" : "Health Connect";
+  const has = (k: keyof WearableDay) => days.some((d) => d[k] != null);
+  const metrics = [
+    has("restingHr") && "Batimentos em repouso",
+    has("hrvMs") && "Variabilidade cardíaca",
+    has("sleepHours") && "Sono",
+    has("spo2Min") && "Saturação",
+    has("steps") && "Passos",
+    has("systolic") && "Pressão arterial",
+  ].filter((x): x is string => Boolean(x));
+  update((db) => {
+    const merged = new Map<string, WearableDay>();
+    if (db.wearableSource?.kind === "importado") for (const d of db.wearableDays) merged.set(d.date, d);
+    for (const d of days) merged.set(d.date, d);
+    const all = [...merged.values()].sort((a, b) => a.date.localeCompare(b.date));
+    const cutoff = addDays(all.at(-1)!.date, -(MAX_IMPORT_DAYS - 1));
+    db.wearableDays = all.filter((d) => d.date >= cutoff);
+    db.wearableSource = { kind: "importado", label, readBy: "direto", connected: platform, importedAt: new Date().toISOString() };
+    db.devices = [{ id: "dev-conectado", name: label, kind: "importado", metrics, connectedAt: new Date().toISOString() }];
+  });
+  return days.length;
+}
+
 /** Completa à mão um valor que ficou "não lido" na leitura do laudo. */
 export function fillLabValue(id: string, value: number): boolean {
   if (!Number.isFinite(value)) return false;

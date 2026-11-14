@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Switch } from "@/components/base/switch";
 import { ChevronRight } from "@/components/icons";
+import { HealthConnectCard } from "@/components/HealthConnect";
 import { ProfileSettings } from "@/components/ProfileSettings";
 import { ReadingQuality } from "@/components/ReadingQuality";
 import { PageHeader, SectionTitle, Skeleton } from "@/components/ui";
@@ -128,6 +129,9 @@ function Devices({ db }: { db: Db }) {
   return (
     <>
       <SectionTitle>Aparelhos e apps conectados</SectionTitle>
+      <div className="mb-2 empty:hidden">
+        <HealthConnectCard />
+      </div>
       <LinkCard
         href="/wearables"
         title={names.length ? names.join(", ") : "Nenhum aparelho conectado"}

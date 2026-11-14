@@ -1,3 +1,4 @@
+import { saveFile } from "./saveFile";
 import { analyteInfo, resolveAnalyteKey } from "./analytes";
 import { todayISO } from "./dates";
 import { labStatus } from "./health";
@@ -169,16 +170,8 @@ export function buildBundle(
   };
 }
 
-export function downloadJson(filename: string, data: unknown) {
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/fhir+json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+export async function downloadJson(filename: string, data: unknown) {
+  await saveFile(filename, new Blob([JSON.stringify(data, null, 2)], { type: "application/fhir+json" }));
 }
 
 // ---------- importação ----------

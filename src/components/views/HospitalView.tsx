@@ -214,7 +214,7 @@ export function HospitalDashboard({
                 className="btn-secondary mt-3 w-full"
                 onClick={() => {
                   const bundle = buildBundle({ ...data, encounters: [] }, { consent: { share, admission: ad } });
-                  downloadJson(`prontuario-${p.name.split(" ")[0].toLowerCase()}-${todayISO()}.json`, bundle);
+                  void downloadJson(`prontuario-${p.name.split(" ")[0].toLowerCase()}-${todayISO()}.json`, bundle);
                   toast.success("Pacote FHIR baixado", { description: `${bundle.entry.length} registros, com o consentimento.` });
                 }}
               >

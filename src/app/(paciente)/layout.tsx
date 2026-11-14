@@ -2,6 +2,7 @@ import Link from "next/link";
 import { BottomNav } from "@/components/BottomNav";
 import { ChatLauncher } from "@/components/ChatLauncher";
 import { ChatNotifier } from "@/components/ChatNotifier";
+import { AppHealthAutoSync } from "@/components/HealthConnect";
 import { ExamSearch } from "@/components/ExamSearch";
 import { GearIcon, Logo } from "@/components/icons";
 import { OnboardingGate } from "@/components/OnboardingGate";
@@ -28,6 +29,7 @@ export default function PacienteLayout({ children }: { children: React.ReactNode
         </div>
       </header>
       <ChatNotifier />
+      <AppHealthAutoSync />
       <ChatLauncher />
       <main id="conteudo" tabIndex={-1} className="flex-1 px-5 pb-32 pt-4 outline-none">{children}</main>
       <BottomNav />

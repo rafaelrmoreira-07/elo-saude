@@ -35,8 +35,8 @@ export function DataPortability() {
     try {
       const db = getDbSnapshot();
       const day = new Date().toISOString().slice(0, 10);
-      if (kind === "pdf") downloadBlob(`elo-saude-historico-${day}.pdf`, await buildPdf(db));
-      else downloadBlob(`elo-saude-historico-${day}.xlsx`, buildXlsx(historySheets(db)));
+      if (kind === "pdf") await downloadBlob(`elo-saude-historico-${day}.pdf`, await buildPdf(db));
+      else await downloadBlob(`elo-saude-historico-${day}.xlsx`, buildXlsx(historySheets(db)));
       toast.success(kind === "pdf" ? "PDF baixado" : "Planilha baixada", { description: `${db.labResults.length} resultados de exame, remédios, vacinas e consultas.` });
     } catch (e) {
       toast.error("Não consegui gerar o arquivo", { description: e instanceof Error ? e.message : undefined });
@@ -56,7 +56,7 @@ export function DataPortability() {
           onClick={() => {
             const db = getDbSnapshot();
             const bundle = buildBundle(db);
-            downloadJson(`elo-saude-historico-${new Date().toISOString().slice(0, 10)}.json`, bundle);
+            void downloadJson(`elo-saude-historico-${new Date().toISOString().slice(0, 10)}.json`, bundle);
             countFhirExport();
             toast.success("Histórico baixado", { description: `${bundle.entry.length} registros em FHIR.` });
           }}

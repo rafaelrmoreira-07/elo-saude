@@ -5,6 +5,7 @@
  * carregado só quando a pessoa pede o arquivo.
  */
 import { strToU8, zipSync } from "fflate";
+import { saveFile } from "./saveFile";
 import { ageFrom, formatDate } from "./dates";
 import { fmt, labStatus } from "./health";
 import type { Db } from "./types";
@@ -223,13 +224,6 @@ export async function buildPdf(db: HistoryDb): Promise<Blob> {
   return new Blob([(await doc.save()) as BlobPart], { type: "application/pdf" });
 }
 
-export function downloadBlob(filename: string, blob: Blob) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+export async function downloadBlob(filename: string, blob: Blob) {
+  await saveFile(filename, blob);
 }
