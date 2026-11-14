@@ -24,11 +24,11 @@ export function AiStatusBanner() {
   if (enabled !== false) return null;
   if (!aiConsented())
     return (
-      <Link href="/configuracoes/#dados" className="lift mt-4 flex items-center gap-3 rounded-2xl border border-line p-4 text-sm text-muted">
+      <Link href="/configuracoes/#ia" className="lift mt-4 flex items-center gap-3 rounded-2xl border border-line p-4 text-sm text-muted">
         <ScanIcon width={22} className="shrink-0 text-ink" />
         <span className="flex-1">
-          <span className="block font-medium text-ink">Leitura por IA desligada</span>
-          Você preenche os valores dos laudos à mão. Para ligar, vá em Privacidade e dados.
+          <span className="block font-medium text-ink">IA desligada</span>
+          Você preenche os valores dos laudos à mão. Para ligar, vá em Configurações, Inteligência artificial.
         </span>
         <ChevronRight width={18} className="shrink-0 text-faint" />
       </Link>

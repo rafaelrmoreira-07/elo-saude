@@ -79,9 +79,9 @@ export default function ConfiguracoesPage() {
           <SectionTitle>Plano</SectionTitle>
           <PlanCard />
 
+          <AiSettings db={db} />
           <AppsSection db={db} />
           <DevicesSection db={db} />
-          <ReadingSettings />
           <Notifications db={db} />
           <Privacy db={db} />
         </>
@@ -128,12 +128,45 @@ function Row({ label, value, danger }: { label: string; value: string; danger?: 
   );
 }
 
-/** Qualidade da leitura dos laudos pela IA. A chave da IA é configurada pelo app, não pelo usuário. */
-function ReadingSettings() {
+/** IA opcional: um interruptor para tudo o que usa a Gemini. Desligada, nada sai do aparelho para a IA. */
+function AiSettings({ db }: { db: Db }) {
+  const ia = db.consents?.ia !== false;
   return (
     <>
-      <SectionTitle id="qualidade">Qualidade da leitura</SectionTitle>
-      <ReadingQuality />
+      <SectionTitle id="ia">Inteligência artificial</SectionTitle>
+      <div className="tile">
+        <div className="flex items-center gap-3">
+          <div className="flex-1">
+            <p className="text-[15px] font-medium text-ink" id="usar-ia">Usar IA</p>
+            <p className="text-sm text-muted">{ia ? "Ligada" : "Desligada: nada vai para a IA"}</p>
+          </div>
+          <Switch aria-labelledby="usar-ia" aria-describedby="ia-detalhe" checked={ia} onCheckedChange={(v) => setAiConsent(v)} />
+        </div>
+        <div id="ia-detalhe" className="mt-3 border-t border-line pt-3 text-sm leading-relaxed text-muted">
+          {ia ? (
+            <>
+              <p>A IA lê os laudos, responde na conversa e escreve o resumo para o médico. Nada é salvo sem você conferir.</p>
+              <p className="mt-2">Laudos e mensagens vão para a IA do Google (Gemini), processada fora do Brasil. Na conversa, o seu nome é tirado antes do envio.</p>
+            </>
+          ) : (
+            <>
+              <p>O app continua funcionando: você preenche os valores dos laudos, a conversa responde pelos botões e o resumo para o médico é feito por regras.</p>
+              <p className="mt-2">Pode ligar de novo quando quiser.</p>
+            </>
+          )}
+        </div>
+      </div>
+      {ia && (
+        <details className="group mt-2">
+          <summary className="tile lift flex min-h-12 cursor-pointer list-none items-center gap-3 text-[15px] font-medium text-ink [&::-webkit-details-marker]:hidden">
+            <span className="flex-1">Qualidade da leitura</span>
+            <ChevronRight width={18} className="shrink-0 text-faint transition-transform group-open:rotate-90" />
+          </summary>
+          <div className="mt-2">
+            <ReadingQuality />
+          </div>
+        </details>
+      )}
     </>
   );
 }
@@ -177,21 +210,16 @@ function Notifications({ db }: { db: Db }) {
 
 function Privacy({ db }: { db: Db }) {
   const active = db.shares.filter((s) => shareState(s) === "ativo").length;
-  const ia = db.consents?.ia !== false;
   return (
     <>
       <SectionTitle id="dados">Privacidade e dados</SectionTitle>
       {/* Cada item no seu cartão; apagar fica uma etapa adiante, em "Gerenciar meus dados" */}
       <div className="space-y-2">
-        <div className="tile flex items-center gap-3">
-          <div className="flex-1">
-            <p className="text-[15px] font-medium text-ink" id="consent-ia">Leitura por IA</p>
-            <p className="text-sm text-muted">
-              {ia ? "Laudos e mensagens vão à IA do Google (Gemini) para leitura, processados fora do Brasil." : "Desligada: nada vai à IA. Você preenche os valores à mão."}
-            </p>
-          </div>
-          <Switch aria-labelledby="consent-ia" checked={ia} onCheckedChange={(v) => setAiConsent(v)} />
-        </div>
+        <LinkCard
+          href="/configuracoes/#ia"
+          title="Inteligência artificial"
+          text={db.consents?.ia !== false ? "Ligada. Desligue quando quiser." : "Desligada: nada vai para a IA."}
+        />
         <LinkCard
           href="/acessos"
           title="Quem tem acesso"

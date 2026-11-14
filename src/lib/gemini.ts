@@ -69,7 +69,7 @@ export async function generateJson<T>(opts: {
   schema: object;
   timeoutMs?: number;
 }): Promise<{ data: T; model: string }> {
-  if (!aiConsented()) throw new GeminiUnavailableError("Leitura por IA desligada nas Configurações");
+  if (!aiConsented()) throw new GeminiUnavailableError("IA desligada nas Configurações");
   const key = PROXY ? "" : getGeminiKey();
   if (!PROXY && !key) throw new GeminiUnavailableError("Chave da Gemini não configurada");
 
