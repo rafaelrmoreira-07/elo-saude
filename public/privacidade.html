@@ -3,36 +3,84 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Privacidade · Elo Saúde</title>
+<meta name="referrer" content="no-referrer">
+<title>Política de Privacidade · Elo Saúde</title>
 <style>
-  body { font-family: system-ui, -apple-system, sans-serif; color: #1f2b4d; max-width: 42rem; margin: 0 auto; padding: 2rem 1.25rem; line-height: 1.6; }
-  h1 { font-weight: 500; letter-spacing: -0.02em; }
+  body { font-family: system-ui, -apple-system, sans-serif; color: #1f2b4d; max-width: 42rem; margin: 0 auto; padding: 2rem 1.25rem 4rem; line-height: 1.6; }
+  h1 { font-weight: 500; letter-spacing: -0.02em; margin-bottom: 0.25rem; }
   h2 { font-size: 1.1rem; margin-top: 2rem; }
-  p, li { color: #3a4566; }
+  p, li, td { color: #3a4566; }
+  .meta { color: #5f6679; font-size: 0.9rem; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
+  th, td { text-align: left; vertical-align: top; padding: 0.5rem 0.5rem 0.5rem 0; border-bottom: 1px solid #e3e6ee; }
+  th { color: #1f2b4d; font-weight: 600; }
+  .todo { background: #fff4d6; padding: 0 0.25rem; border-radius: 4px; }
 </style>
 </head>
 <body>
-<h1>Privacidade no Elo Saúde</h1>
-<p>O Elo organiza o seu histórico de saúde (exames, remédios, vacinas, consultas e medições de relógio, anel ou medidor) para você e para o seu médico.</p>
+<h1>Política de Privacidade do Elo Saúde</h1>
+<p class="meta">Versão de 14 de novembro de 2026. Segue a Lei Geral de Proteção de Dados (LGPD, Lei 13.709/2018).</p>
 
-<h2>Onde ficam os seus dados</h2>
-<p>O histórico fica salvo no seu aparelho. O Elo não mantém uma cópia em servidor próprio.</p>
+<p>O Elo organiza o seu histórico de saúde (exames, remédios, vacinas, consultas e medições de relógio, anel ou medidor) para você e para os médicos e hospitais que você escolher. Dados de saúde são dados pessoais sensíveis: por isso o Elo só os trata com o seu consentimento, para as finalidades abaixo.</p>
 
-<h2>Apple Saúde e Health Connect</h2>
+<h2>1. Quem é o responsável</h2>
+<p>Controlador: <span class="todo">[razão social e CNPJ]</span>, <span class="todo">[endereço]</span>.<br>
+Encarregado de dados (DPO): <span class="todo">[nome]</span>, <span class="todo">[e-mail do encarregado]</span>.</p>
+
+<h2>2. Quais dados e para quê</h2>
+<table>
+  <tr><th>Dado</th><th>Para quê</th><th>Base legal</th></tr>
+  <tr><td>Nome, nascimento, sexo, tipo sanguíneo, alergias, contato de emergência</td><td>Montar o seu perfil e escolher as faixas de referência dos exames</td><td>Consentimento (art. 11, I)</td></tr>
+  <tr><td>Exames, laudos, consultas, remédios, vacinas</td><td>Organizar o histórico, mostrar a evolução e gerar alertas</td><td>Consentimento (art. 11, I)</td></tr>
+  <tr><td>Medições de apps e aparelhos (batimento, sono, saturação, passos, pressão)</td><td>Mostrar a evolução e indicar quando procurar atendimento</td><td>Consentimento (art. 11, I)</td></tr>
+  <tr><td>Nome e CRM do médico ou nome do hospital que você autoriza</td><td>Montar o link de acesso e mostrar a você quem tem acesso</td><td>Consentimento (art. 11, I) e tutela da saúde (art. 11, II, f)</td></tr>
+</table>
+<p>O Elo não usa os seus dados para publicidade, não os vende e não faz perfil de comportamento. O Elo não dá diagnóstico: os alertas indicam quando procurar um profissional.</p>
+
+<h2>3. Onde ficam os seus dados</h2>
+<p>O histórico fica salvo no seu aparelho (no navegador ou no app). O Elo não mantém uma cópia em servidor próprio. No app de Android, os dados não entram no backup na nuvem nem na transferência para outro celular.</p>
+
+<h2>4. Com quem os dados são compartilhados</h2>
 <ul>
-  <li>Com a sua permissão, o app lê do Apple Saúde (iPhone) ou do Health Connect (Android): batimento em repouso, variabilidade cardíaca, sono, saturação de oxigênio, passos e pressão arterial.</li>
-  <li>O Elo só lê. Não grava nada no Apple Saúde nem no Health Connect.</li>
-  <li>Os dados lidos servem só para mostrar a sua evolução, gerar alertas de quando procurar atendimento e, se você autorizar, compor o relatório para o seu médico. Não são usados para publicidade nem vendidos.</li>
-  <li>Você pode revogar a permissão a qualquer momento nos ajustes do celular.</li>
+  <li><strong>Médicos e hospitais que você escolhe.</strong> Você decide quais dados, de qual período e por quanto tempo. O link é protegido por um código de acesso: os dados vão cifrados (AES-256) e só abrem com o código, que você passa ao médico separado do link. Você pode revogar quando quiser em "Quem tem acesso".</li>
+  <li><strong>IA do Google (Gemini), só se você autorizar.</strong> Para ler os laudos e responder na conversa, o conteúdo enviado vai ao Google, que o processa fora do Brasil (transferência internacional com base no seu consentimento específico, art. 33, VIII). O Elo usa a Gemini só para extrair resultados e responder; o envio pode ser desligado a qualquer momento em Configurações › Privacidade e dados. Desligado, nada vai à IA e você preenche os valores à mão.</li>
+  <li>Ninguém mais. Não há compartilhamento com planos de saúde, empregadores ou anunciantes.</li>
 </ul>
 
-<h2>Leitura de laudos por IA</h2>
-<p>Quando você envia a foto ou o PDF de um laudo, o arquivo vai do seu aparelho para a Gemini (Google), só para extrair os resultados. Nada é salvo sem você conferir.</p>
+<h2>5. Apple Saúde, Health Connect e outros apps</h2>
+<ul>
+  <li>Com a sua permissão, o app lê do Apple Saúde (iPhone) ou do Health Connect (Android): batimento em repouso, variabilidade cardíaca, sono, saturação de oxigênio, passos e pressão arterial, e o nome do app e do aparelho que gravou cada dado.</li>
+  <li>O Elo só lê. Não grava nada no Apple Saúde nem no Health Connect, e não usa esses dados para publicidade, mineração ou venda.</li>
+  <li>Arquivos exportados de outros apps (Samsung Health, Garmin, Oura, apps de saúde com IA e outros) entram só quando você importa.</li>
+  <li>Em Configurações você vê cada app e aparelho conectado e pode desconectar, mantendo ou apagando os dados que vieram dele. A permissão de leitura também pode ser revogada nos ajustes do celular.</li>
+</ul>
 
-<h2>Compartilhamento com médicos e hospitais</h2>
-<p>Você escolhe o que compartilhar, de qual período e por quanto tempo. Cada acesso fica registrado e pode ser revogado.</p>
+<h2>6. Seus direitos (art. 18)</h2>
+<p>Você pode, a qualquer momento e direto no app:</p>
+<ul>
+  <li>ver todos os seus dados e saber com quem foram compartilhados ("Quem tem acesso");</li>
+  <li>corrigir dados incompletos ou errados (perfil e valores dos exames);</li>
+  <li>levar os seus dados para outro sistema (PDF, planilha e o padrão FHIR, em "Gerenciar meus dados");</li>
+  <li>apagar os seus dados e revogar consentimentos (desligar a IA, revogar links, desconectar apps).</li>
+</ul>
+<p>Para qualquer outro pedido, fale com o encarregado pelo e-mail acima.</p>
 
-<h2>Apagar os seus dados</h2>
-<p>Em Configurações › Gerenciar meus dados você baixa uma cópia ou apaga tudo deste aparelho (LGPD, art. 18).</p>
+<h2>7. Por quanto tempo</h2>
+<p>Os dados ficam no seu aparelho até você apagar. Os links de médico param de abrir no fim do prazo que você escolher. O Elo não guarda cópia dos laudos enviados à IA.</p>
+
+<h2>8. Segurança</h2>
+<ul>
+  <li>Links de médico cifrados com código de acesso (AES-256-GCM, chave derivada por PBKDF2 com 600 mil iterações).</li>
+  <li>Política de segurança de conteúdo no app, que limita para onde os dados podem ser enviados.</li>
+  <li>Sem backup automático dos dados de saúde no Android.</li>
+  <li>Comunicação só por conexões cifradas (HTTPS).</li>
+</ul>
+<p>Em caso de incidente de segurança que possa trazer risco a você, o Elo avisa você e a ANPD, como manda a lei.</p>
+
+<h2>9. Crianças e adolescentes</h2>
+<p>O cadastro é feito pela própria pessoa maior de 18 anos. Dados de crianças e adolescentes só com o consentimento de um dos pais ou responsável (art. 14).</p>
+
+<h2>10. Mudanças nesta política</h2>
+<p>Se a política mudar, o app avisa e pede um novo consentimento quando a mudança afetar o que é feito com os seus dados.</p>
 </body>
 </html>

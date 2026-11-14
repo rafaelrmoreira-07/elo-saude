@@ -1,0 +1,7 @@
+name = "elo-saude-ia"
+main = "worker.js"
+compatibility_date = "2026-11-01"
+
+[vars]
+# Site publicado e o app de iPhone (capacitor://localhost) e Android (https://localhost)
+ALLOWED_ORIGINS = "https://rafaelrmoreira-07.github.io,capacitor://localhost,https://localhost"

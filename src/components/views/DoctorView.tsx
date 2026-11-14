@@ -18,7 +18,8 @@ import { summaryForShare } from "@/lib/doctor";
 import { geminiConfigured } from "@/lib/gemini";
 import { analyteSeries, fmt, formatRef, hasBloodPressure, hasMetric, medicationMarkers, wearableSnapshot } from "@/lib/health";
 import { sourceLine } from "@/lib/wearableImport";
-import { dataForShare, decodeSharePayload, shareState, type ScopedData, type SharedExtras } from "@/lib/share";
+import { dataForShare, decodeLockedPayload, decodeSharePayload, shareState, type ScopedData, type SharedExtras } from "@/lib/share";
+import { WrongCodeError } from "@/lib/shareCrypto";
 import { logAccess, openDocumentFile, useDb } from "@/lib/store";
 import { fallbackSummary, generateDoctorSummary } from "@/lib/summary";
 import { buildTimeline } from "@/lib/timeline";
@@ -30,7 +31,8 @@ const DENIED = {
   revogado: "O paciente revogou este acesso.",
 };
 
-type FromLink = ({ share: Share; data: ScopedData; summary?: Summary } & SharedExtras) | "invalid" | null;
+type Opened = { share: Share; data: ScopedData; summary?: Summary } & SharedExtras;
+type FromLink = Opened | { locked: string } | "invalid" | null;
 
 export function DoctorView() {
   const token = useSearchParams().get("t") ?? "";
@@ -43,7 +45,13 @@ export function DoctorView() {
   // Link aberto em outro aparelho: os dados vêm no fragmento #d=...
   useEffect(() => {
     if (!db || local) return;
-    const payload = new URLSearchParams(window.location.hash.slice(1)).get("d");
+    const frag = new URLSearchParams(window.location.hash.slice(1));
+    const locked = frag.get("e");
+    if (locked) {
+      queueMicrotask(() => setFromLink({ locked }));
+      return;
+    }
+    const payload = frag.get("d");
     if (!payload) {
       queueMicrotask(() => setFromLink("invalid"));
       return;
@@ -89,6 +97,7 @@ export function DoctorView() {
   }
 
   if (fromLink === "invalid" || !fromLink) return <Denied reason="nao_encontrado" />;
+  if ("locked" in fromLink) return <CodeGate payload={fromLink.locked} token={token} onOpen={setFromLink} />;
   if (shareState(fromLink.share) !== "ativo") return <Denied reason="expirado" />;
   const { share, data, summary } = fromLink;
   if (share.kind === "hospital") {
@@ -101,6 +110,56 @@ export function DoctorView() {
       fromLink
       loadSummary={async () => summary ?? (geminiConfigured() ? generateDoctorSummary(data) : fallbackSummary(data))}
     />
+  );
+}
+
+/** Link protegido: o médico digita o código que o paciente passou por outro canal. */
+function CodeGate({ payload, token, onOpen }: { payload: string; token: string; onOpen: (r: Opened | "invalid") => void }) {
+  const [code, setCode] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [tries, setTries] = useState(0);
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      // Espera crescente a cada erro, para dificultar tentativas em série
+      if (tries > 0) await new Promise((r) => setTimeout(r, Math.min(8000, 500 * 2 ** tries)));
+      const r = await decodeLockedPayload(payload, code);
+      onOpen(r.share.token === token ? r : "invalid");
+    } catch (err) {
+      setTries((t) => t + 1);
+      setError(err instanceof WrongCodeError ? "Código incorreto. Confira com o paciente." : "Este link está incompleto.");
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <form onSubmit={submit} className="mx-auto mt-16 max-w-sm px-4">
+      <ShieldIcon className="mx-auto h-12 w-12 text-ink" />
+      <h1 className="mt-3 text-center display">Relatório protegido</h1>
+      <p className="mt-2 text-center text-[15px] text-ink-soft">Digite o código de acesso que o paciente passou a você. Sem ele, os dados do link não podem ser lidos.</p>
+      <label className="mt-6 block">
+        <span className="label">Código de acesso</span>
+        <input
+          className="input text-center font-mono text-xl tracking-[0.2em] uppercase"
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          placeholder="XXXX-XXXX"
+          autoComplete="off"
+          autoCapitalize="characters"
+          spellCheck={false}
+          maxLength={12}
+          aria-describedby={error ? "erro-codigo" : undefined}
+          aria-invalid={Boolean(error)}
+          autoFocus
+        />
+      </label>
+      {error && <p id="erro-codigo" className="mt-2 text-[15px] text-danger" role="alert">{error}</p>}
+      <button className="btn-primary mt-4 w-full" disabled={busy || code.replace(/[^A-Za-z0-9]/g, "").length < 8}>{busy ? "Abrindo…" : "Abrir relatório"}</button>
+    </form>
   );
 }
 

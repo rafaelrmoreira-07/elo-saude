@@ -8,6 +8,7 @@ import { cleanPeriod } from "./period";
 import { createPersonaDb, personaWearables } from "./personas";
 import { extendWearablesToToday } from "./seed";
 import { simulatedDischarge } from "./admission";
+import { newAccessCode } from "./shareCrypto";
 import { appRef, CENTRAL_ID, mergeAppDays, personaConnections, type Detected } from "./healthApps";
 import { SCOPES, type Admission, type CheckInSymptom, type Db, type DescriptiveReport, type DoctorSummary, type ExtractedResult, type ExtractionSource, type PersonaId, type Scope, type ShareKind, type DeviceKind, type HealthApp, type WearableDay, type WearableDevice } from "./types";
 import { MAX_IMPORT_DAYS, METRIC_LABELS, type ImportResult } from "./wearableImport";
@@ -51,8 +52,15 @@ function read(): Db {
   return db;
 }
 
+/** Versão da política de privacidade (public/privacidade.html). */
+export const POLICY_VERSION = "2026-11-14";
+/** Espelho do consentimento da IA, lido pelo cliente da Gemini sem abrir o banco inteiro. */
+export const AI_CONSENT_KEY = "elo-saude:ia-consent";
+
 function write(db: Db) {
   localStorage.setItem(DB_KEY, JSON.stringify(db));
+  if (db.consents?.ia === false) localStorage.setItem(AI_CONSENT_KEY, "nao");
+  else localStorage.removeItem(AI_CONSENT_KEY);
 }
 
 function notify() {
@@ -421,6 +429,24 @@ export function fillLabValue(id: string, value: number): boolean {
   });
 }
 
+/** Consentimentos do cadastro (LGPD). */
+export function saveConsents(ia: boolean) {
+  update((db) => {
+    const at = nowIso();
+    db.consents = { policyVersion: POLICY_VERSION, healthAt: db.consents?.healthAt ?? at, ia, iaAt: at };
+  });
+  window.dispatchEvent(new Event("elo-saude:gemini-key"));
+}
+
+/** Liga ou desliga a leitura pela IA (Configurações › Privacidade). Revogar vale na hora. */
+export function setAiConsent(ia: boolean) {
+  update((db) => {
+    const at = nowIso();
+    db.consents = { policyVersion: db.consents?.policyVersion ?? POLICY_VERSION, healthAt: db.consents?.healthAt ?? at, ia, iaAt: at };
+  });
+  window.dispatchEvent(new Event("elo-saude:gemini-key"));
+}
+
 /** Cadastro do guia de boas-vindas e edição do perfil em Configurações. */
 export function saveProfile(profile: {
   name: string;
@@ -502,6 +528,7 @@ export function createShare(form: {
       createdAt: now.toISOString(),
       expiresAt: new Date(now.getTime() + form.hours * 3_600_000).toISOString(),
       revokedAt: null,
+      accessCode: newAccessCode(),
       accessLog: [],
       kind: form.kind ?? "medico",
       admissionId: form.admissionId,

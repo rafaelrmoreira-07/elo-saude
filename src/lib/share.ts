@@ -1,5 +1,6 @@
 import { computeAlerts } from "./health";
 import { inPeriod, medInPeriod, type Period } from "./period";
+import { decryptWithCode, encryptWithCode } from "./shareCrypto";
 import type { Admission, CheckIn, Db, DescriptiveReport, DoctorSummary, Encounter, Medication, Patient, Scope, Share, ShareKind, Vaccine, WearableDay } from "./types";
 
 export type ShareState = "ativo" | "expirado" | "revogado";
@@ -224,14 +225,30 @@ async function pipe(bytes: Uint8Array, stream: CompressionStream | Decompression
   return new Uint8Array(await new Response(out).arrayBuffer());
 }
 
+/**
+ * Fragmento do link do médico: "e=..." (cifrado com o código de acesso) ou,
+ * nos compartilhamentos antigos sem código, "d=..." (só compactado).
+ */
 export async function encodeSharePayload(share: Share, data: ScopedData, summary?: DoctorSummary, extras?: SharedExtras): Promise<string> {
   const json = new TextEncoder().encode(JSON.stringify(toSnapshot(share, data, summary, extras)));
-  return b64url(await pipe(json, new CompressionStream("deflate-raw")));
+  const packed = await pipe(json, new CompressionStream("deflate-raw"));
+  if (share.accessCode) return `e=${b64url(await encryptWithCode(packed, share.accessCode))}`;
+  return `d=${b64url(packed)}`;
 }
 
-export async function decodeSharePayload(payload: string) {
-  const bytes = await pipe(fromB64url(payload), new DecompressionStream("deflate-raw"));
-  const snap = JSON.parse(new TextDecoder().decode(bytes)) as Snapshot;
+async function unpack(bytes: Uint8Array) {
+  const raw = await pipe(bytes, new DecompressionStream("deflate-raw"));
+  const snap = JSON.parse(new TextDecoder().decode(raw)) as Snapshot;
   if (snap.v !== 1) throw new Error("versão de link não suportada");
   return fromSnapshot(snap);
+}
+
+/** Link antigo, sem código (#d=...). */
+export async function decodeSharePayload(payload: string) {
+  return unpack(fromB64url(payload));
+}
+
+/** Link com código de acesso (#e=...). Lança WrongCodeError se o código não confere. */
+export async function decodeLockedPayload(payload: string, code: string) {
+  return unpack(await decryptWithCode(fromB64url(payload), code));
 }

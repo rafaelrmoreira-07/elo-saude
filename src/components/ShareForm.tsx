@@ -128,6 +128,7 @@ export function ShareResult({
   eyebrow?: string;
 }) {
   const [url, setUrl] = useState<string | null>(null);
+  const [code, setCode] = useState<string | null>(null);
   const [qr, setQr] = useState<string | null>(null);
 
   useEffect(() => {
@@ -136,6 +137,7 @@ export function ShareResult({
       if (!link || cancelled) return;
       const full = absoluteUrl(link.path);
       setUrl(full);
+      setCode(link.code ?? null);
       if (full.length <= QR_MAX_CHARS) setQr(await QRCode.toDataURL(full, { width: 260, margin: 1, errorCorrectionLevel: "L", color: { dark: "#1f2b4d" } }));
     });
     return () => {
@@ -158,9 +160,30 @@ export function ShareResult({
             // eslint-disable-next-line @next/next/no-img-element
             <img src={qr} alt="QR code do link do relatório" className="mx-auto mt-5 h-48 w-48 rounded-2xl bg-white p-3" />
           )}
+          {code && (
+            <div className="mt-5 rounded-2xl bg-white/10 p-4 text-center">
+              <p className="text-sm text-navy-200">Código de acesso</p>
+              <p className="num mt-1 font-mono text-3xl font-medium tracking-[0.15em]">{code}</p>
+              <p className="mt-2 text-sm leading-relaxed text-navy-200">Passe o código ao médico separado do link: falando ou em outra mensagem. Sem ele, o link não abre.</p>
+              <button
+                type="button"
+                className="mt-2 inline-flex min-h-11 items-center gap-1.5 text-[15px] font-medium text-white underline decoration-white/30 underline-offset-4"
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(code);
+                    toast.success("Código copiado");
+                  } catch {
+                    window.prompt("Copie o código:", code);
+                  }
+                }}
+              >
+                <CopyIcon width={16} /> Copiar código
+              </button>
+            </div>
+          )}
           <div className="mt-5 flex flex-col gap-2">
             {share && (
-              <a href={whatsappDoctorUrl(share.doctorName, share.expiresAt, url)} target="_blank" rel="noopener" className="btn-primary">
+              <a href={whatsappDoctorUrl(share.doctorName, share.expiresAt, url, Boolean(code))} target="_blank" rel="noopener" className="btn-primary">
                 <WhatsappIcon width={20} /> Enviar pelo WhatsApp
               </a>
             )}
@@ -192,7 +215,9 @@ export function ShareResult({
             </Link>
           </div>
           <p className="mt-4 text-sm leading-relaxed text-navy-200">
-            O link leva só os dados autorizados e para de abrir no fim do prazo. Até lá, quem tiver o link consegue abrir, então envie só para o médico.
+            {code
+              ? "O link leva só os dados autorizados, cifrados, e para de abrir no fim do prazo. Você pode revogar em Quem tem acesso."
+              : "O link leva só os dados autorizados e para de abrir no fim do prazo. Até lá, quem tiver o link consegue abrir, então envie só para o médico."}
           </p>
         </>
       )}

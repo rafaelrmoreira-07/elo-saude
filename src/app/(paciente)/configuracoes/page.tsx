@@ -10,7 +10,8 @@ import { ReadingQuality } from "@/components/ReadingQuality";
 import { PageHeader, SectionTitle, Skeleton } from "@/components/ui";
 import { ageFrom, formatDate } from "@/lib/dates";
 import { shareState } from "@/lib/share";
-import { updatePrefs, useDb } from "@/lib/store";
+import { asset } from "@/lib/paths";
+import { setAiConsent, updatePrefs, useDb } from "@/lib/store";
 import type { Db, HealthAlert, Patient } from "@/lib/types";
 
 /** Tipos de alerta e se podem ser silenciados. Os que pedem médico ficam sempre ligados. */
@@ -174,20 +175,38 @@ function Notifications({ db }: { db: Db }) {
 
 function Privacy({ db }: { db: Db }) {
   const active = db.shares.filter((s) => shareState(s) === "ativo").length;
+  const ia = db.consents?.ia !== false;
   return (
     <>
       <SectionTitle id="dados">Privacidade e dados</SectionTitle>
       {/* Cada item no seu cartão; apagar fica uma etapa adiante, em "Gerenciar meus dados" */}
       <div className="space-y-2">
+        <div className="tile flex items-center gap-3">
+          <div className="flex-1">
+            <p className="text-[15px] font-medium text-ink" id="consent-ia">Leitura por IA</p>
+            <p className="text-sm text-muted">
+              {ia ? "Laudos e mensagens vão à IA do Google (Gemini) para leitura, processados fora do Brasil." : "Desligada: nada vai à IA. Você preenche os valores à mão."}
+            </p>
+          </div>
+          <Switch aria-labelledby="consent-ia" checked={ia} onCheckedChange={(v) => setAiConsent(v)} />
+        </div>
         <LinkCard
           href="/acessos"
           title="Quem tem acesso"
           text={active ? `${active} ${active === 1 ? "acesso ativo" : "acessos ativos"}. Veja ou revogue.` : "Nenhum acesso ativo agora."}
         />
         <LinkCard href="/configuracoes/dados" title="Gerenciar meus dados" text="Levar para outro sistema, apagar a conversa ou apagar seus dados." />
+        <a href={asset("/privacidade.html")} target="_blank" rel="noopener" className="tile lift flex min-h-16 items-center gap-3">
+          <span className="min-w-0 flex-1">
+            <span className="block text-[15px] font-medium text-ink">Política de privacidade</span>
+            <span className="block text-sm text-muted">Quais dados, para quê, com quem e os seus direitos (LGPD).</span>
+          </span>
+          <ChevronRight width={18} className="shrink-0 text-faint" />
+        </a>
       </div>
       <p className="mt-2 text-xs leading-relaxed text-muted">
-        Seu histórico fica salvo neste aparelho. Os laudos enviados são lidos por IA (Gemini, do Google) só para extrair os resultados.
+        Seu histórico fica salvo neste aparelho. Você pode ver, corrigir, levar para outro sistema e apagar seus dados quando quiser.
+        {db.consents ? ` Consentimento registrado em ${formatDate(db.consents.healthAt.slice(0, 10))}.` : ""}
       </p>
     </>
   );

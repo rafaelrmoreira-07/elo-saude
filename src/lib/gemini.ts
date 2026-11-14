@@ -5,6 +5,7 @@
  *
  * Atenção: no site estático, NEXT_PUBLIC_* vai dentro do JavaScript publicado.
  * Use uma chave temporária, restrita por site (HTTP referrer) e só à Gemini API.
+ * Para as lojas, use NEXT_PUBLIC_AI_PROXY_URL (a chave fica no servidor).
  *
  * Tenta cada modelo em ordem; se um estiver sobrecarregado ou demorar demais,
  * passa para o próximo.
@@ -14,6 +15,12 @@ const API = "https://generativelanguage.googleapis.com/v1beta/models";
 const KEY_STORAGE = "elo-saude:gemini-key";
 /** Chave embutida pelo app no build (temporária para a demonstração). */
 const APP_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY?.trim() || null;
+/**
+ * Servidor intermediário (server/ai-proxy) que guarda a chave. Com ele
+ * configurado, o app não leva chave nenhuma: é o caminho para as lojas.
+ * Ex.: https://elo-ia.seu-dominio.workers.dev/models
+ */
+const PROXY = process.env.NEXT_PUBLIC_AI_PROXY_URL?.trim().replace(/\/$/, "") || null;
 export const MODELS = ["gemini-3.5-flash", "gemini-3-flash-preview", "gemini-3.8-flash"];
 
 export type GeminiPart = { text: string } | { inlineData: { mimeType: string; data: string } };
@@ -31,8 +38,14 @@ export function setGeminiKey(key: string | null) {
   window.dispatchEvent(new Event("elo-saude:gemini-key"));
 }
 
+/** false quando a pessoa desligou a leitura por IA (LGPD): nada é enviado à Gemini. */
+export function aiConsented(): boolean {
+  if (typeof window === "undefined") return true;
+  return localStorage.getItem("elo-saude:ia-consent") !== "nao";
+}
+
 export function geminiConfigured(): boolean {
-  return Boolean(getGeminiKey());
+  return Boolean(PROXY || getGeminiKey()) && aiConsented();
 }
 
 export async function generateJson<T>(opts: {
@@ -41,8 +54,9 @@ export async function generateJson<T>(opts: {
   schema: object;
   timeoutMs?: number;
 }): Promise<{ data: T; model: string }> {
-  const key = getGeminiKey();
-  if (!key) throw new GeminiUnavailableError("Chave da Gemini não configurada");
+  if (!aiConsented()) throw new GeminiUnavailableError("Leitura por IA desligada nas Configurações");
+  const key = PROXY ? "" : getGeminiKey();
+  if (!PROXY && !key) throw new GeminiUnavailableError("Chave da Gemini não configurada");
 
   const errors: string[] = [];
   for (const model of MODELS) {
@@ -61,12 +75,14 @@ export async function generateJson<T>(opts: {
 
 async function attempt<T>(
   model: string,
-  key: string,
+  key: string | null,
   opts: { system: string; parts: GeminiPart[]; schema: object; timeoutMs?: number },
 ): Promise<T> {
-  const res = await fetch(`${API}/${encodeURIComponent(model)}:generateContent`, {
+  // Com o servidor intermediário, a chave fica nele e não vai para o aparelho
+  const url = `${PROXY ?? API}/${encodeURIComponent(model)}:generateContent`;
+  const res = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+    headers: PROXY ? { "Content-Type": "application/json" } : { "Content-Type": "application/json", "x-goog-api-key": key ?? "" },
     signal: AbortSignal.timeout(opts.timeoutMs ?? 40_000),
     body: JSON.stringify({
       systemInstruction: { parts: [{ text: opts.system }] },

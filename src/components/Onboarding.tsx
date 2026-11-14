@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { todayISO } from "@/lib/dates";
-import { resetDemo, saveProfile } from "@/lib/store";
+import { asset } from "@/lib/paths";
+import { resetDemo, saveConsents, saveProfile } from "@/lib/store";
 import { FileIcon, LogoMark, ShieldIcon, WatchIcon } from "./icons";
 import { MAX_BATCH } from "./Uploader";
 
@@ -66,6 +67,8 @@ export function Onboarding() {
   const [birthDate, setBirthDate] = useState("");
   const [sex, setSex] = useState<"F" | "M" | "">("");
   const [allergies, setAllergies] = useState("");
+  const [agree, setAgree] = useState(false);
+  const [ia, setIa] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const atForm = step === STEPS.length;
   const total = STEPS.length + 1;
@@ -75,6 +78,8 @@ export function Onboarding() {
     if (name.trim().length < 2) return setError("Informe o nome.");
     if (!birthDate || birthDate > todayISO() || birthDate < "1900-01-01") return setError("Informe uma data de nascimento válida.");
     if (!sex) return setError("Escolha o sexo.");
+    if (!agree) return setError("Para usar o Elo, é preciso autorizar o tratamento dos seus dados de saúde.");
+    saveConsents(ia);
     saveProfile({
       name: name.trim().replace(/\s+/g, " "),
       birthDate,
@@ -88,7 +93,7 @@ export function Onboarding() {
     <div className="fixed inset-0 z-40 overflow-y-auto bg-bg">
       <div className="mx-auto flex min-h-dvh max-w-md flex-col px-5 pb-8 pt-[max(1.5rem,env(safe-area-inset-top))]">
         <div className="flex items-center justify-between">
-          <div className="flex gap-1.5" aria-label={`Passo ${step + 1} de ${total}`}>
+          <div className="flex gap-1.5" role="img" aria-label={`Passo ${step + 1} de ${total}`}>
             {Array.from({ length: total }, (_, i) => (
               <span key={i} className={`h-1.5 w-7 rounded-full transition-colors ${i < step ? "bg-ink" : i === step ? "bg-accent" : "bg-line"}`} />
             ))}
@@ -147,7 +152,24 @@ export function Onboarding() {
               </label>
             </div>
             {error && <p className="mt-4 rounded-2xl bg-danger-soft p-3 text-[15px] text-danger" role="alert">{error}</p>}
-            <p className="mt-6 text-sm text-muted">Tudo fica salvo neste navegador.</p>
+            <fieldset className="mt-6 space-y-3">
+              <legend className="label">Seus dados (LGPD)</legend>
+              <label className="flex cursor-pointer gap-3 text-[15px] leading-relaxed text-ink">
+                <input type="checkbox" className="mt-1 h-5 w-5 shrink-0 accent-[var(--color-ink)]" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
+                <span>
+                  Autorizo o Elo a tratar meus dados de saúde para organizar meu histórico e mostrar alertas. Li a{" "}
+                  <a href={asset("/privacidade.html")} target="_blank" rel="noopener" className="font-medium underline underline-offset-4">Política de Privacidade</a>.
+                </span>
+              </label>
+              <label className="flex cursor-pointer gap-3 text-[15px] leading-relaxed text-ink">
+                <input type="checkbox" className="mt-1 h-5 w-5 shrink-0 accent-[var(--color-ink)]" checked={ia} onChange={(e) => setIa(e.target.checked)} />
+                <span>
+                  Opcional: autorizo enviar meus laudos e mensagens à IA do Google (Gemini) para leitura. Os dados são processados fora do Brasil. Sem isso, você
+                  digita os valores à mão. Dá para mudar depois em Configurações.
+                </span>
+              </label>
+            </fieldset>
+            <p className="mt-4 text-sm text-muted">Tudo fica salvo neste aparelho.</p>
             <div className="mt-auto flex flex-col gap-2 pt-8">
               <button type="submit" className="btn-primary w-full">Começar e enviar meu primeiro exame</button>
               <button type="button" className="btn-secondary w-full" onClick={() => setStep(STEPS.length - 1)}>Voltar</button>

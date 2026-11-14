@@ -33,6 +33,11 @@ export function Shares() {
                 <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${st === "ativo" ? "bg-ok-soft text-ok" : "bg-white text-muted"}`}>{STATE_LABEL[st]}</span>
               </div>
               <p className="mt-2 text-sm text-muted">{s.scopes.map((x) => SCOPE_LABELS[x]).join(" · ")}</p>
+              {st === "ativo" && s.accessCode && (
+                <p className="mt-1 text-sm text-muted">
+                  Código de acesso: <span className="num font-mono font-medium tracking-wider text-ink">{s.accessCode}</span>
+                </p>
+              )}
               <p className="mt-1 text-sm text-muted">
                 {s.accessLog.length ? `Aberto ${s.accessLog.length} ${s.accessLog.length === 1 ? "vez" : "vezes"} neste aparelho, a última em ${formatDateTime(s.accessLog.at(-1)!.at)}` : "Ainda não foi aberto neste aparelho"}
               </p>

@@ -176,10 +176,12 @@ async function createReport(doctorName: string, hours: number, label: string, sa
   return say({
     text:
       `Pronto. O relatório para *${doctorName}* fica disponível por *${label}*.\n\n` +
-      "Envie o link para o médico. Ele vê seus exames, remédios, consultas, vacinas e as medições do relógio numa tela só. Você pode revogar quando quiser.",
+      "Envie o link para o médico. Ele vê seus exames, remédios, consultas, vacinas e as medições do relógio numa tela só. Você pode revogar quando quiser." +
+      (link.code ? `\n\nCódigo de acesso: *${link.code}*. Passe ao médico separado do link (falando ou em outra mensagem): sem ele, o link não abre.` : ""),
     actions: [
-      { kind: "link", label: "Enviar pelo WhatsApp", href: whatsappDoctorUrl(doctorName, getDbSnapshot().shares.find((s) => s.token === res.token)?.expiresAt ?? new Date().toISOString(), absoluteUrl(link.path)), newTab: true },
+      { kind: "link", label: "Enviar pelo WhatsApp", href: whatsappDoctorUrl(doctorName, getDbSnapshot().shares.find((s) => s.token === res.token)?.expiresAt ?? new Date().toISOString(), absoluteUrl(link.path), Boolean(link.code)), newTab: true },
       { kind: "copy", label: "Copiar link", text: absoluteUrl(link.path) },
+      ...(link.code ? [{ kind: "copy" as const, label: "Copiar código", text: link.code }] : []),
       { kind: "link", label: "Abrir relatório", href: `/medico/?t=${encodeURIComponent(res.token)}`, newTab: true },
       { kind: "revoke", label: "Revogar acesso", token: res.token },
     ],

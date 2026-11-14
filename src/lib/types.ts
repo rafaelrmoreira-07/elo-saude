@@ -229,6 +229,11 @@ export interface Share {
   recentShown?: number;
   /** Período dos dados que o médico pode ver (ausente = todo o histórico). */
   period?: { from?: string; to?: string };
+  /**
+   * Código de acesso do link (ex.: K7M4-PX9Q). Os dados no link vão cifrados
+   * com ele; o médico digita o código para abrir. Ausente nos links antigos.
+   */
+  accessCode?: string;
 }
 
 /** Arquivo guardado no IndexedDB (ex.: foto do pedido médico). */
@@ -324,6 +329,19 @@ export interface Db {
   fhirExports?: number;
   /** Preferências de avisos (Configurações). Ausente = tudo ligado. */
   prefs?: Prefs;
+  /** Consentimentos da LGPD (art. 8 e 11). Ausente = perfis de demonstração e bancos antigos. */
+  consents?: Consents;
+}
+
+/** Registro dos consentimentos, com data e versão da política aceita. */
+export interface Consents {
+  /** Versão da política de privacidade aceita (ex.: "2026-11-14"). */
+  policyVersion: string;
+  /** Tratamento dos dados de saúde para organizar o histórico e gerar alertas (art. 11, I). */
+  healthAt: string;
+  /** Leitura de laudos e conversa pela IA do Google (Gemini), com transferência internacional (art. 33). */
+  ia: boolean;
+  iaAt: string;
 }
 
 /** Quais alertas aparecem como aviso no topo da tela. */
