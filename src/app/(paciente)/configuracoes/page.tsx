@@ -77,13 +77,6 @@ export default function ConfiguracoesPage() {
         </>
       )}
 
-      <SectionTitle>Apresentação</SectionTitle>
-      <div className="tile space-y-3">
-        <p className="text-[15px] text-muted">O app do paciente e a tela do médico lado a lado, para projetar, e os indicadores que um hospital ou plano pagaria por resultado.</p>
-        <Link href="/demo" className="btn-secondary w-full">Abrir modo apresentação</Link>
-        <Link href="/impacto" className="btn-secondary w-full">Ver indicadores de resultado</Link>
-      </div>
-
       <SectionTitle>Sobre</SectionTitle>
       <div className="tile space-y-2 text-sm leading-relaxed text-muted">
         <p>Elo Saúde organiza seu histórico e indica quando procurar atendimento. Os alertas não são diagnóstico.</p>
